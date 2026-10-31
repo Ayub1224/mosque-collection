@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -59,16 +58,11 @@ export default function AddMemberPage() {
     <section className="mx-auto max-w-[680px] space-y-5">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-[#64748B]">
-        <Link
-          href="/dashboard/members"
-          className="hover:text-[#102744]"
-        >
+        <Link href="/dashboard/members" className="hover:text-[#102744]">
           Members
         </Link>
         <span>/</span>
-        <span className="font-medium text-[#172B4D]">
-          Add Member
-        </span>
+        <span className="font-medium text-[#172B4D]">Add Member</span>
       </div>
 
       {/* Heading */}
@@ -130,9 +124,7 @@ export default function AddMemberPage() {
               />
 
               {errors.fullName && (
-                <p className={errorClass}>
-                  {errors.fullName.message}
-                </p>
+                <p className={errorClass}>{errors.fullName.message}</p>
               )}
             </div>
 
@@ -166,9 +158,7 @@ export default function AddMemberPage() {
               </p>
 
               {errors.phoneNumber && (
-                <p className={errorClass}>
-                  {errors.phoneNumber.message}
-                </p>
+                <p className={errorClass}>{errors.phoneNumber.message}</p>
               )}
             </div>
           </div>
@@ -192,9 +182,7 @@ export default function AddMemberPage() {
             />
 
             {errors.joiningDate && (
-              <p className={errorClass}>
-                {errors.joiningDate.message}
-              </p>
+              <p className={errorClass}>{errors.joiningDate.message}</p>
             )}
           </div>
 
@@ -204,7 +192,8 @@ export default function AddMemberPage() {
               htmlFor="address"
               className="mb-2 block text-xs font-medium text-[#172B4D]"
             >
-              Address <span className="font-normal text-[#64748B]">(Optional)</span>
+              Address{" "}
+              <span className="font-normal text-[#64748B]">(Optional)</span>
             </label>
 
             <textarea
@@ -218,9 +207,7 @@ export default function AddMemberPage() {
             />
 
             {errors.address && (
-              <p className={errorClass}>
-                {errors.address.message}
-              </p>
+              <p className={errorClass}>{errors.address.message}</p>
             )}
           </div>
         </div>
