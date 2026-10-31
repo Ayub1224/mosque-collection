@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
 
 const months = [
   "Jan", "Feb", "Mar", "Apr",
@@ -5,12 +7,21 @@ const months = [
   "Sep", "Oct", "Nov", "Dec",
 ];
 
-export default function MonthlyCollectionOverview() {
+async function CurrentYear() {
+  await connection();
+
   const currentYear = new Date().getFullYear();
 
   return (
+    <span className="w-fit rounded-lg border border-[#E2E8F0] bg-[#F5F7FA] px-3 py-2 text-sm font-medium text-[#17365D]">
+      {currentYear}
+    </span>
+  );
+}
+
+export default function MonthlyCollectionOverview() {
+  return (
     <section className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
-      {/* Chart heading */}
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-base font-semibold text-[#102744]">
@@ -21,12 +32,15 @@ export default function MonthlyCollectionOverview() {
           </p>
         </div>
 
-        <span className="w-fit rounded-lg border border-[#E2E8F0] bg-[#F5F7FA] px-3 py-2 text-sm font-medium text-[#17365D]">
-          {currentYear}
-        </span>
+        <Suspense
+          fallback={
+            <span className="h-9 w-20 animate-pulse rounded-lg bg-[#E2E8F0]" />
+          }
+        >
+          <CurrentYear />
+        </Suspense>
       </div>
 
-      {/* Chart area */}
       <div className="mt-8">
         <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-[#E2E8F0] bg-[#FAFBFC]">
           <div className="max-w-sm px-5 text-center">
@@ -55,7 +69,6 @@ export default function MonthlyCollectionOverview() {
           </div>
         </div>
 
-        {/* Month labels */}
         <div className="mt-4 grid grid-cols-6 gap-2 text-center sm:grid-cols-12">
           {months.map((month) => (
             <span
