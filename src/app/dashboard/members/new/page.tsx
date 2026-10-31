@@ -1,6 +1,6 @@
 "use client";
-
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +10,7 @@ import {
 } from "@/lib/validations/member.schema";
 
 export default function AddMemberPage() {
+  const router = useRouter();
   const [today, setToday] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
 
@@ -17,6 +18,7 @@ export default function AddMemberPage() {
     register,
     handleSubmit,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<MemberFormValues>({
     resolver: zodResolver(memberSchema),
@@ -35,16 +37,81 @@ export default function AddMemberPage() {
     setValue("joiningDate", currentDate);
   }, [setValue]);
 
-  const onSubmit = async (values: MemberFormValues) => {
-    setSubmitMessage("");
 
-    // Backend integration will be added in the next step.
-    console.log("Validated member form:", values);
+const onSubmit = async (values: MemberFormValues) => {
+  setSubmitMessage("");
+
+  try {
+    const response = await fetch("/api/members", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(values),
+    });
+
+    const data = await response.json();
+
+    if (response.status === 409) {
+      setError("phoneNumber", {
+        type: "server",
+        message: "This phone number is already registered.",
+      });
+      return;
+    }
+
+    if (response.status === 400) {
+      const properties = data.errors?.properties;
+
+      const fields = [
+        "fullName",
+        "phoneNumber",
+        "address",
+        "joiningDate",
+      ] as const;
+
+      fields.forEach((field) => {
+        const message = properties?.[field]?.errors?.[0];
+
+        if (message) {
+          setError(field, {
+            type: "server",
+            message,
+          });
+        }
+      });
+
+      return;
+    }
+
+    if (response.status === 401) {
+      setSubmitMessage(
+        "Your session has expired. Please log in again.",
+      );
+      return;
+    }
+
+    if (!response.ok || !data.success) {
+      setSubmitMessage(
+        data.message || "Unable to register member. Please try again.",
+      );
+      return;
+    }
+
+    setSubmitMessage("Member registered successfully!");
+
+    router.push("/dashboard/members");
+    router.refresh();
+  } catch (error) {
+    console.error("Member registration failed:", error);
 
     setSubmitMessage(
-      "Validation successful. Member registration will be enabled after connecting the data source.",
+      "Something went wrong. Please check your connection and try again.",
     );
-  };
+  }
+};
+
 
   const inputClass =
     "h-10 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none transition placeholder:text-[#94A3B8] focus:border-[#17365D] focus:ring-2 focus:ring-[#17365D]/10";
@@ -236,7 +303,7 @@ export default function AddMemberPage() {
             disabled={isSubmitting || !today}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-5 text-sm font-medium text-white transition hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Validating..." : "Save Member"}
+          {isSubmitting ? "Saving..." : "Save Member"}
           </button>
         </div>
       </form>
