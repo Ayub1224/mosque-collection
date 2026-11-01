@@ -83,3 +83,39 @@ export async function getMember(memberId: string): Promise<Member> {
 
   return data.member;
 }
+
+type UpdateMemberResponse =
+  | {
+      success: true;
+      message: string;
+      member: Member;
+    }
+  | {
+      success: false;
+      message: string;
+      errors?: unknown;
+    };
+
+export async function updateMember(
+  memberId: string,
+  input: CreateMemberInput,
+): Promise<Member> {
+  const response = await fetch(
+    `/api/members/${encodeURIComponent(memberId)}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    },
+  );
+
+  const data: UpdateMemberResponse = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Unable to update member.");
+  }
+
+  return data.member;
+}
