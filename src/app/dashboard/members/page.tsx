@@ -182,7 +182,14 @@ export default function MembersPage() {
                         {member.status}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-right">—</td>
+                    <td className="px-5 py-4 text-right">
+                      <Link
+                        href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`}
+                        className="text-sm font-medium text-[#17365D] hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    </td>
                   </tr>
                 ))
               )}
