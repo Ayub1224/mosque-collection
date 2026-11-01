@@ -228,6 +228,14 @@ export default function MembersPage() {
                   {member.address || "No address"}
                 </p>
                 <p className="text-xs text-[#94A3B8]">ID: {member.memberId}</p>
+                <div className="flex justify-end pt-2">
+                  <Link
+                    href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`}
+                    className="text-sm font-medium text-[#17365D] hover:underline"
+                  >
+                    Edit Member
+                  </Link>
+                </div>
               </div>
             ))
           )}
