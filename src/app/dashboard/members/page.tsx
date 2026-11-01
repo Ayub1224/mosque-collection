@@ -1,39 +1,29 @@
-
 "use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-
-type MemberStatus = "Active" | "Inactive";
-
-type Member = {
-  id: string;
-  name: string;
-  phone: string;
-  address: string;
-  joiningDate: string;
-  status: MemberStatus;
-};
-
+import { useMembers } from "@/hooks/members/use-members";
+import type { Member } from "@/types/member";
 // Real member records will be connected later.
 const members: Member[] = [];
 
 export default function MembersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const { data: members = [], isLoading, isError, error } = useMembers();
 
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
       const matchesSearch =
-        member.name.toLowerCase().includes(search.toLowerCase()) ||
-        member.phone.includes(search);
+        member.fullName.toLowerCase().includes(search.toLowerCase()) ||
+        member.phoneNumber.includes(search);
 
       const matchesStatus =
         statusFilter === "All" || member.status === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
-  }, [search, statusFilter]);
+  }, [members, search, statusFilter]);
 
   const summaryCards = [
     {
@@ -58,9 +48,7 @@ export default function MembersPage() {
       {/* Page heading */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-[#102744]">
-            Members
-          </h1>
+          <h1 className="text-2xl font-semibold text-[#102744]">Members</h1>
           <p className="mt-1 text-sm text-[#64748B]">
             Manage mosque members and their information.
           </p>
@@ -81,15 +69,11 @@ export default function MembersPage() {
             key={card.title}
             className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm"
           >
-            <p className="text-sm font-medium text-[#64748B]">
-              {card.title}
-            </p>
+            <p className="text-sm font-medium text-[#64748B]">{card.title}</p>
             <p className="mt-3 text-2xl font-semibold text-[#102744]">
               {card.value}
             </p>
-            <p className="mt-1 text-xs text-[#94A3B8]">
-              {card.description}
-            </p>
+            <p className="mt-1 text-xs text-[#94A3B8]">{card.description}</p>
           </div>
         ))}
       </div>
