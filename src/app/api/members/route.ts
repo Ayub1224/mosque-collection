@@ -12,6 +12,7 @@ import {
   memberSchema,
   normalizePhoneNumber,
 } from "@/lib/validations/member.schema";
+import type { Member } from "@/types/member";
 
 // Prevent duplicate registrations within the same running server instance.
 const phoneLocks = new Map<string, Promise<void>>();
@@ -163,6 +164,59 @@ export async function POST(request: Request) {
       {
         success: false,
         message: "Unable to register member. Please try again.",
+      },
+      { status: 500 },
+    );
+  }
+}
+
+
+export async function GET() {
+  try {
+    // 1. Verify administrator authentication.
+    const session = await auth();
+
+    if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized access." },
+        { status: 401 },
+      );
+    }
+
+    // 2. Fetch members from Google Sheets.
+    const sheets = getGoogleSheetsClient();
+    const spreadsheetId = getSpreadsheetId();
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: MEMBERS_SHEET_RANGE,
+    });
+
+    const rows = response.data.values ?? [];
+
+    // 3. Convert spreadsheet rows into Member objects.
+    const members: Member[] = rows.slice(1).map((row) => ({
+      memberId: String(row[0] ?? ""),
+      fullName: String(row[1] ?? ""),
+      phoneNumber: String(row[2] ?? ""),
+      address: String(row[3] ?? ""),
+      joiningDate: String(row[4] ?? ""),
+      status: row[5] === "Inactive" ? "Inactive" : "Active",
+      createdAt: String(row[6] ?? ""),
+      updatedAt: String(row[7] ?? ""),
+    }));
+
+    return NextResponse.json({
+      success: true,
+      members,
+    });
+  } catch (error) {
+    console.error("Fetch members error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Unable to fetch members. Please try again.",
       },
       { status: 500 },
     );
