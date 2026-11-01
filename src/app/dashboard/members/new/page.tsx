@@ -8,11 +8,13 @@ import {
   memberSchema,
   type MemberFormValues,
 } from "@/lib/validations/member.schema";
+import { useCreateMember } from "@/hooks/members/use-create-member";
 
 export default function AddMemberPage() {
   const router = useRouter();
   const [today, setToday] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
+  const createMemberMutation = useCreateMember();
 
   const {
     register,
@@ -41,18 +43,14 @@ export default function AddMemberPage() {
     setSubmitMessage("");
 
     try {
-      const response = await fetch("/api/members", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(values),
-      });
+      await createMemberMutation.mutateAsync(values);
 
-      const data = await response.json();
+      router.push("/dashboard/members");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to register member.";
 
-      if (response.status === 409) {
+      if (message.toLowerCase().includes("already registered")) {
         setError("phoneNumber", {
           type: "server",
           message: "This phone number is already registered.",
@@ -60,52 +58,7 @@ export default function AddMemberPage() {
         return;
       }
 
-      if (response.status === 400) {
-        const properties = data.errors?.properties;
-
-        const fields = [
-          "fullName",
-          "phoneNumber",
-          "address",
-          "joiningDate",
-        ] as const;
-
-        fields.forEach((field) => {
-          const message = properties?.[field]?.errors?.[0];
-
-          if (message) {
-            setError(field, {
-              type: "server",
-              message,
-            });
-          }
-        });
-
-        return;
-      }
-
-      if (response.status === 401) {
-        setSubmitMessage("Your session has expired. Please log in again.");
-        return;
-      }
-
-      if (!response.ok || !data.success) {
-        setSubmitMessage(
-          data.message || "Unable to register member. Please try again.",
-        );
-        return;
-      }
-
-      setSubmitMessage("Member registered successfully!");
-
-      router.push("/dashboard/members");
-      router.refresh();
-    } catch (error) {
-      console.error("Member registration failed:", error);
-
-      setSubmitMessage(
-        "Something went wrong. Please check your connection and try again.",
-      );
+      setSubmitMessage(message);
     }
   };
 
@@ -296,10 +249,10 @@ export default function AddMemberPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting || !today}
+            disabled={createMemberMutation.isPending || !today}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-5 text-sm font-medium text-white transition hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Saving..." : "Save Member"}
+            {createMemberMutation.isPending ? "Saving..." : "Save Member"}
           </button>
         </div>
       </form>
