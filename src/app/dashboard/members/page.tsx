@@ -2,43 +2,72 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+
 import { useMembers } from "@/hooks/members/use-members";
-import { toast } from "sonner";
 import { useUpdateMemberStatus } from "@/hooks/members/use-update-member-status";
+import type { Member } from "@/types/member";
+
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function MembersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+
+  const [statusFeedback, setStatusFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
   const { data: members = [], isLoading, isError, error } = useMembers();
+
   const updateStatusMutation = useUpdateMemberStatus();
 
-  const handleStatusChange = async (
-    memberId: string,
-    currentStatus: "Active" | "Inactive",
-  ) => {
-    const nextStatus = currentStatus === "Active" ? "Inactive" : "Active";
+  const openStatusDialog = (member: Member) => {
+    setSelectedMember(member);
+    setStatusFeedback(null);
+  };
 
-    const confirmed = window.confirm(
-      `Are you sure you want to ${
-        nextStatus === "Active" ? "activate" : "deactivate"
-      } this member?`,
-    );
+  const closeStatusDialog = () => {
+    if (updateStatusMutation.isPending) return;
 
-    if (!confirmed) return;
+    setSelectedMember(null);
+    setStatusFeedback(null);
+  };
+
+  const handleStatusChange = async () => {
+    if (!selectedMember) return;
+
+    const nextStatus =
+      selectedMember.status === "Active" ? "Inactive" : "Active";
 
     try {
       const message = await updateStatusMutation.mutateAsync({
-        memberId,
+        memberId: selectedMember.memberId,
         status: nextStatus,
       });
 
-      toast.success(message);
+      setStatusFeedback({
+        type: "success",
+        message,
+      });
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Unable to update member status.",
-      );
+      setStatusFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to update member status.",
+      });
     }
   };
 
@@ -227,9 +256,7 @@ export default function MembersPage() {
                         <button
                           type="button"
                           disabled={updateStatusMutation.isPending}
-                          onClick={() =>
-                            handleStatusChange(member.memberId, member.status)
-                          }
+                          onClick={() => openStatusDialog(member)}
                           className={`text-sm font-medium hover:underline disabled:opacity-50 ${
                             member.status === "Active"
                               ? "text-red-600"
@@ -291,9 +318,7 @@ export default function MembersPage() {
                   <button
                     type="button"
                     disabled={updateStatusMutation.isPending}
-                    onClick={() =>
-                      handleStatusChange(member.memberId, member.status)
-                    }
+                    onClick={() => openStatusDialog(member)}
                     className={`text-sm font-medium hover:underline disabled:opacity-50 ${
                       member.status === "Active"
                         ? "text-red-600"
@@ -318,6 +343,71 @@ export default function MembersPage() {
           </p>
         </div>
       </div>
+      <AlertDialog
+        open={Boolean(selectedMember)}
+        onOpenChange={(open) => {
+          if (!open) closeStatusDialog();
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {statusFeedback
+                ? statusFeedback.type === "success"
+                  ? "Status updated"
+                  : "Unable to update status"
+                : selectedMember?.status === "Active"
+                  ? "Deactivate member?"
+                  : "Activate member?"}
+            </AlertDialogTitle>
+
+            <AlertDialogDescription>
+              {statusFeedback
+                ? statusFeedback.message
+                : `Are you sure you want to ${
+                    selectedMember?.status === "Active"
+                      ? "deactivate"
+                      : "activate"
+                  } ${selectedMember?.fullName}?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            {statusFeedback?.type === "success" ? (
+              <AlertDialogCancel
+                onClick={closeStatusDialog}
+                className="h-9 rounded-md px-5 font-sans text-sm font-medium"
+              >
+                Done
+              </AlertDialogCancel>
+            ) : (
+              <>
+                <AlertDialogCancel
+                  disabled={updateStatusMutation.isPending}
+                  className="h-9 rounded-md border border-slate-200 bg-white px-5 font-sans text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
+                >
+                  Cancel
+                </AlertDialogCancel>
+
+                <button
+                  type="button"
+                  disabled={updateStatusMutation.isPending}
+                  onClick={handleStatusChange}
+                  className="inline-flex h-9 items-center justify-center rounded-md bg-[#102744] px-5 font-sans text-sm font-medium text-white shadow-sm transition-all hover:bg-[#17365D] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {updateStatusMutation.isPending
+                    ? "Updating..."
+                    : statusFeedback?.type === "error"
+                      ? "Try again"
+                      : selectedMember?.status === "Active"
+                        ? "Deactivate"
+                        : "Make Active"}
+                </button>
+              </>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }
