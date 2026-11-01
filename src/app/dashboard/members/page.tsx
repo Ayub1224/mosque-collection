@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useMembers } from "@/hooks/members/use-members";
-import type { Member } from "@/types/member";
 
 export default function MembersPage() {
   const [search, setSearch] = useState("");
@@ -26,21 +25,20 @@ export default function MembersPage() {
   const summaryCards = [
     {
       title: "Total Members",
-      value: "—",
+      value: members.length,
       description: "All registered members",
     },
     {
       title: "Active Members",
-      value: "—",
+      value: members.filter((member) => member.status === "Active").length,
       description: "Currently active",
     },
     {
       title: "Inactive Members",
-      value: "—",
+      value: members.filter((member) => member.status === "Inactive").length,
       description: "Currently inactive",
     },
   ];
-
   return (
     <section className="space-y-6">
       {/* Page heading */}
