@@ -37,81 +37,77 @@ export default function AddMemberPage() {
     setValue("joiningDate", currentDate);
   }, [setValue]);
 
+  const onSubmit = async (values: MemberFormValues) => {
+    setSubmitMessage("");
 
-const onSubmit = async (values: MemberFormValues) => {
-  setSubmitMessage("");
-
-  try {
-    const response = await fetch("/api/members", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(values),
-    });
-
-    const data = await response.json();
-
-    if (response.status === 409) {
-      setError("phoneNumber", {
-        type: "server",
-        message: "This phone number is already registered.",
-      });
-      return;
-    }
-
-    if (response.status === 400) {
-      const properties = data.errors?.properties;
-
-      const fields = [
-        "fullName",
-        "phoneNumber",
-        "address",
-        "joiningDate",
-      ] as const;
-
-      fields.forEach((field) => {
-        const message = properties?.[field]?.errors?.[0];
-
-        if (message) {
-          setError(field, {
-            type: "server",
-            message,
-          });
-        }
+    try {
+      const response = await fetch("/api/members", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(values),
       });
 
-      return;
-    }
+      const data = await response.json();
 
-    if (response.status === 401) {
+      if (response.status === 409) {
+        setError("phoneNumber", {
+          type: "server",
+          message: "This phone number is already registered.",
+        });
+        return;
+      }
+
+      if (response.status === 400) {
+        const properties = data.errors?.properties;
+
+        const fields = [
+          "fullName",
+          "phoneNumber",
+          "address",
+          "joiningDate",
+        ] as const;
+
+        fields.forEach((field) => {
+          const message = properties?.[field]?.errors?.[0];
+
+          if (message) {
+            setError(field, {
+              type: "server",
+              message,
+            });
+          }
+        });
+
+        return;
+      }
+
+      if (response.status === 401) {
+        setSubmitMessage("Your session has expired. Please log in again.");
+        return;
+      }
+
+      if (!response.ok || !data.success) {
+        setSubmitMessage(
+          data.message || "Unable to register member. Please try again.",
+        );
+        return;
+      }
+
+      setSubmitMessage("Member registered successfully!");
+
+      router.push("/dashboard/members");
+      router.refresh();
+    } catch (error) {
+      console.error("Member registration failed:", error);
+
       setSubmitMessage(
-        "Your session has expired. Please log in again.",
+        "Something went wrong. Please check your connection and try again.",
       );
-      return;
     }
-
-    if (!response.ok || !data.success) {
-      setSubmitMessage(
-        data.message || "Unable to register member. Please try again.",
-      );
-      return;
-    }
-
-    setSubmitMessage("Member registered successfully!");
-
-    router.push("/dashboard/members");
-    router.refresh();
-  } catch (error) {
-    console.error("Member registration failed:", error);
-
-    setSubmitMessage(
-      "Something went wrong. Please check your connection and try again.",
-    );
-  }
-};
-
+  };
 
   const inputClass =
     "h-10 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none transition placeholder:text-[#94A3B8] focus:border-[#17365D] focus:ring-2 focus:ring-[#17365D]/10";
@@ -303,7 +299,7 @@ const onSubmit = async (values: MemberFormValues) => {
             disabled={isSubmitting || !today}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-5 text-sm font-medium text-white transition hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-60"
           >
-          {isSubmitting ? "Saving..." : "Save Member"}
+            {isSubmitting ? "Saving..." : "Save Member"}
           </button>
         </div>
       </form>
