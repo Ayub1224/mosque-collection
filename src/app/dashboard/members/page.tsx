@@ -3,11 +3,44 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useMembers } from "@/hooks/members/use-members";
+import { toast } from "sonner";
+import { useUpdateMemberStatus } from "@/hooks/members/use-update-member-status";
 
 export default function MembersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const { data: members = [], isLoading, isError, error } = useMembers();
+  const updateStatusMutation = useUpdateMemberStatus();
+
+  const handleStatusChange = async (
+    memberId: string,
+    currentStatus: "Active" | "Inactive",
+  ) => {
+    const nextStatus = currentStatus === "Active" ? "Inactive" : "Active";
+
+    const confirmed = window.confirm(
+      `Are you sure you want to ${
+        nextStatus === "Active" ? "activate" : "deactivate"
+      } this member?`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const message = await updateStatusMutation.mutateAsync({
+        memberId,
+        status: nextStatus,
+      });
+
+      toast.success(message);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to update member status.",
+      );
+    }
+  };
 
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
@@ -183,12 +216,31 @@ export default function MembersPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <Link
-                        href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`}
-                        className="text-sm font-medium text-[#17365D] hover:underline"
-                      >
-                        Edit
-                      </Link>
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`}
+                          className="text-sm font-medium text-[#17365D] hover:underline"
+                        >
+                          Edit
+                        </Link>
+
+                        <button
+                          type="button"
+                          disabled={updateStatusMutation.isPending}
+                          onClick={() =>
+                            handleStatusChange(member.memberId, member.status)
+                          }
+                          className={`text-sm font-medium hover:underline disabled:opacity-50 ${
+                            member.status === "Active"
+                              ? "text-red-600"
+                              : "text-green-700"
+                          }`}
+                        >
+                          {member.status === "Active"
+                            ? "Deactivate"
+                            : "Make Active"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -228,13 +280,28 @@ export default function MembersPage() {
                   {member.address || "No address"}
                 </p>
                 <p className="text-xs text-[#94A3B8]">ID: {member.memberId}</p>
-                <div className="flex justify-end pt-2">
+                <div className="flex items-center justify-end gap-4 pt-2">
                   <Link
                     href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`}
                     className="text-sm font-medium text-[#17365D] hover:underline"
                   >
-                    Edit Member
+                    Edit
                   </Link>
+
+                  <button
+                    type="button"
+                    disabled={updateStatusMutation.isPending}
+                    onClick={() =>
+                      handleStatusChange(member.memberId, member.status)
+                    }
+                    className={`text-sm font-medium hover:underline disabled:opacity-50 ${
+                      member.status === "Active"
+                        ? "text-red-600"
+                        : "text-green-700"
+                    }`}
+                  >
+                    {member.status === "Active" ? "Deactivate" : "Make Active"}
+                  </button>
                 </div>
               </div>
             ))

@@ -119,3 +119,37 @@ export async function updateMember(
 
   return data.member;
 }
+
+type UpdateMemberStatusResponse =
+  | {
+      success: true;
+      message: string;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+
+export async function updateMemberStatus(
+  memberId: string,
+  status: "Active" | "Inactive",
+): Promise<string> {
+  const response = await fetch(
+    `/api/members/${encodeURIComponent(memberId)}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    },
+  );
+
+  const data: UpdateMemberStatusResponse = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Unable to update member status.");
+  }
+
+  return data.message;
+}
