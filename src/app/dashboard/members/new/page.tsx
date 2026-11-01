@@ -21,7 +21,7 @@ export default function AddMemberPage() {
     handleSubmit,
     setValue,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<MemberFormValues>({
     resolver: zodResolver(memberSchema),
     defaultValues: {

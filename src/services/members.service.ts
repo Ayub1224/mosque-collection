@@ -56,3 +56,30 @@ export async function getMembers(): Promise<Member[]> {
 
   return data.members;
 }
+
+
+type GetMemberResponse =
+  | {
+      success: true;
+      member: Member;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+
+export async function getMember(memberId: string): Promise<Member> {
+  const response = await fetch(
+    `/api/members/${encodeURIComponent(memberId)}`,
+  );
+
+  const data: GetMemberResponse = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(
+      !data.success ? data.message : "Unable to fetch member.",
+    );
+  }
+
+  return data.member;
+}
