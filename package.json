@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.2",
+    "@tanstack/react-query": "^5.105.0",
     "googleapis": "^189.0.0",
     "next": "16.4.3",
     "next-auth": "^5.0.0-beta.32",
