@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useMembers } from "@/hooks/members/use-members";
 import type { Member } from "@/types/member";
-// Real member records will be connected later.
-const members: Member[] = [];
 
 export default function MembersPage() {
   const [search, setSearch] = useState("");
@@ -131,17 +129,64 @@ export default function MembersPage() {
             </thead>
 
             <tbody>
-              {filteredMembers.length === 0 && (
+              {isLoading ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-5 py-16 text-center text-[#64748B]"
+                  >
+                    Loading members...
+                  </td>
+                </tr>
+              ) : isError ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-5 py-16 text-center text-red-600"
+                  >
+                    {error instanceof Error
+                      ? error.message
+                      : "Unable to load members."}
+                  </td>
+                </tr>
+              ) : filteredMembers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-16 text-center">
                     <p className="text-sm font-medium text-[#172B4D]">
                       No members found
                     </p>
                     <p className="mt-1 text-xs text-[#64748B]">
-                      Members will appear here once they are registered.
+                      Try changing your search or register a new member.
                     </p>
                   </td>
                 </tr>
+              ) : (
+                filteredMembers.map((member) => (
+                  <tr
+                    key={member.memberId}
+                    className="border-t border-[#E2E8F0]"
+                  >
+                    <td className="px-5 py-4">{member.memberId}</td>
+                    <td className="px-5 py-4 font-medium text-[#172B4D]">
+                      {member.fullName}
+                    </td>
+                    <td className="px-5 py-4">{member.phoneNumber}</td>
+                    <td className="px-5 py-4">{member.address || "—"}</td>
+                    <td className="px-5 py-4">{member.joiningDate}</td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          member.status === "Active"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {member.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-right">—</td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -149,15 +194,37 @@ export default function MembersPage() {
 
         {/* Mobile cards */}
         <div className="divide-y divide-[#E2E8F0] md:hidden">
-          {filteredMembers.length === 0 && (
-            <div className="px-5 py-14 text-center">
-              <p className="text-sm font-medium text-[#172B4D]">
-                No members found
-              </p>
-              <p className="mt-1 text-xs text-[#64748B]">
-                Members will appear here once they are registered.
-              </p>
-            </div>
+          {isLoading ? (
+            <p className="px-5 py-14 text-center text-sm text-[#64748B]">
+              Loading members...
+            </p>
+          ) : isError ? (
+            <p className="px-5 py-14 text-center text-sm text-red-600">
+              Unable to load members.
+            </p>
+          ) : filteredMembers.length === 0 ? (
+            <p className="px-5 py-14 text-center text-sm text-[#64748B]">
+              No members found.
+            </p>
+          ) : (
+            filteredMembers.map((member) => (
+              <div key={member.memberId} className="space-y-2 p-5">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-[#172B4D]">
+                    {member.fullName}
+                  </p>
+                  <span className="text-xs text-[#64748B]">
+                    {member.status}
+                  </span>
+                </div>
+
+                <p className="text-sm text-[#64748B]">{member.phoneNumber}</p>
+                <p className="text-sm text-[#64748B]">
+                  {member.address || "No address"}
+                </p>
+                <p className="text-xs text-[#94A3B8]">ID: {member.memberId}</p>
+              </div>
+            ))
           )}
         </div>
 
