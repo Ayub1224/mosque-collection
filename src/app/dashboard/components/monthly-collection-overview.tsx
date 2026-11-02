@@ -8,6 +8,8 @@ import {
   useLegacyTable,
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy";
+import { useUpdateCollection } from "@/hooks/collections/useUpdateCollection";
+import { useCancelCollection } from "@/hooks/collections/useCancelCollection";
 
 import { useCollectionOverview } from "@/hooks/collections/useCollectionOverview";
 import type { CollectionOverviewRow } from "@/types/collection-overview";
@@ -61,6 +63,18 @@ export default function MonthlyCollectionOverview({
   const [selectedMonth, setSelectedMonth] = useState<SelectedMonth | null>(
     null,
   );
+  const [editingDonationId, setEditingDonationId] = useState<string | null>(
+    null,
+  );
+
+  const [editForm, setEditForm] = useState<{
+    amount: string;
+    donationDate: string;
+    note: string;
+  } | null>(null);
+
+  const updateCollectionMutation = useUpdateCollection();
+  const cancelCollectionMutation = useCancelCollection();
 
   const today = new Date();
   const currentYear = today.getFullYear();
@@ -375,9 +389,18 @@ export default function MonthlyCollectionOverview({
                           );
 
                           return (
-                            <div
+                            <button
                               key={month}
-                              className="rounded-lg border border-[#E2E8F0] bg-white p-2.5"
+                              type="button"
+                              onClick={() =>
+                                setSelectedMonth({
+                                  memberName: row.member.fullName,
+                                  memberId: row.member.memberId,
+                                  monthLabel: label,
+                                  donations: monthData?.donations ?? [],
+                                })
+                              }
+                              className="w-full rounded-lg border border-[#E2E8F0] bg-white p-2.5 text-left transition-colors hover:border-[#17365D] hover:bg-[#F8FAFC]"
                             >
                               <p className="text-xs text-[#64748B]">{label}</p>
 
@@ -386,7 +409,7 @@ export default function MonthlyCollectionOverview({
                                   ? formatCurrency(monthData.total)
                                   : "—"}
                               </p>
-                            </div>
+                            </button>
                           );
                         })}
                       </div>
@@ -525,6 +548,202 @@ export default function MonthlyCollectionOverview({
                               {donation.recordStatus}
                             </span>
                           </div>
+                          {!isCancelled && (
+                            <div className="mt-3 flex justify-end">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingDonationId(donation.collectionId);
+                                  setEditForm({
+                                    amount: String(donation.amount),
+                                    donationDate: donation.donationDate,
+                                    note: donation.note ?? "",
+                                  });
+                                }}
+                                className="rounded-lg border border-[#E2E8F0] px-3 py-1.5 text-xs font-medium text-[#17365D] hover:bg-[#F5F7FA]"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          )}
+
+                          {!isCancelled && (
+                            <div className="mt-2 flex justify-end">
+                              <button
+                                type="button"
+                                disabled={cancelCollectionMutation.isPending}
+                                onClick={() => {
+                                  const confirmed = window.confirm(
+                                    "Are you sure you want to cancel this donation? This action cannot be undone.",
+                                  );
+
+                                  if (!confirmed) return;
+
+                                  cancelCollectionMutation.mutate(
+                                    donation.collectionId,
+                                    {
+                                      onSuccess: (cancelledDonation) => {
+                                        setSelectedMonth((current) =>
+                                          current
+                                            ? {
+                                                ...current,
+                                                donations:
+                                                  current.donations.map(
+                                                    (item) =>
+                                                      item.collectionId ===
+                                                      cancelledDonation.collectionId
+                                                        ? cancelledDonation
+                                                        : item,
+                                                  ),
+                                              }
+                                            : current,
+                                        );
+
+                                        setEditingDonationId(null);
+                                        setEditForm(null);
+                                      },
+                                    },
+                                  );
+                                }}
+                                className="rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                              >
+                                Cancel Donation
+                              </button>
+                            </div>
+                          )}
+
+                          {editingDonationId === donation.collectionId &&
+                            editForm && (
+                              <form
+                                onSubmit={(event) => {
+                                  event.preventDefault();
+
+                                  updateCollectionMutation.mutate(
+                                    {
+                                      collectionId: donation.collectionId,
+                                      input: {
+                                        amount: Number(editForm.amount),
+                                        donationDate: editForm.donationDate,
+                                        note: editForm.note,
+                                      },
+                                    },
+                                    {
+                                      onSuccess: (updatedDonation) => {
+                                        setSelectedMonth((current) =>
+                                          current
+                                            ? {
+                                                ...current,
+                                                donations:
+                                                  current.donations.map(
+                                                    (item) =>
+                                                      item.collectionId ===
+                                                      updatedDonation.collectionId
+                                                        ? updatedDonation
+                                                        : item,
+                                                  ),
+                                              }
+                                            : current,
+                                        );
+
+                                        setEditingDonationId(null);
+                                        setEditForm(null);
+                                      },
+                                    },
+                                  );
+                                }}
+                                className="mt-4 space-y-3 rounded-lg bg-[#F8FAFC] p-3"
+                              >
+                                <div>
+                                  <label className="text-xs font-medium text-[#64748B]">
+                                    Amount (₹)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="0.01"
+                                    step="0.01"
+                                    required
+                                    value={editForm.amount}
+                                    onChange={(event) =>
+                                      setEditForm({
+                                        ...editForm,
+                                        amount: event.target.value,
+                                      })
+                                    }
+                                    className="mt-1 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 py-2 text-sm outline-none focus:border-[#17365D]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-xs font-medium text-[#64748B]">
+                                    Donation Date
+                                  </label>
+                                  <input
+                                    type="date"
+                                    required
+                                    value={editForm.donationDate}
+                                    onChange={(event) =>
+                                      setEditForm({
+                                        ...editForm,
+                                        donationDate: event.target.value,
+                                      })
+                                    }
+                                    className="mt-1 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 py-2 text-sm outline-none focus:border-[#17365D]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-xs font-medium text-[#64748B]">
+                                    Note
+                                  </label>
+                                  <textarea
+                                    rows={2}
+                                    value={editForm.note}
+                                    onChange={(event) =>
+                                      setEditForm({
+                                        ...editForm,
+                                        note: event.target.value,
+                                      })
+                                    }
+                                    className="mt-1 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 py-2 text-sm outline-none focus:border-[#17365D]"
+                                  />
+                                </div>
+
+                                {updateCollectionMutation.isError && (
+                                  <p className="text-xs text-red-600">
+                                    {updateCollectionMutation.error.message}
+                                  </p>
+                                )}
+
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingDonationId(null);
+                                      setEditForm(null);
+                                      updateCollectionMutation.reset();
+                                    }}
+                                    className="rounded-lg px-3 py-2 text-xs font-medium text-[#64748B] hover:bg-[#E2E8F0]"
+                                  >
+                                    Cancel
+                                  </button>
+
+                                  <button
+                                    type="submit"
+                                    disabled={
+                                      updateCollectionMutation.isPending ||
+                                      !editForm.amount ||
+                                      Number(editForm.amount) <= 0 ||
+                                      !editForm.donationDate
+                                    }
+                                    className="rounded-lg bg-[#102744] px-4 py-2 text-xs font-medium text-white hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    {updateCollectionMutation.isPending
+                                      ? "Saving..."
+                                      : "Save Changes"}
+                                  </button>
+                                </div>
+                              </form>
+                            )}
 
                           {donation.note && (
                             <p className="mt-3 border-t border-[#E2E8F0] pt-3 text-xs text-[#64748B]">
