@@ -1,5 +1,6 @@
 
 import MonthlyCollectionOverview from "../components/monthly-collection-overview";
+import CollectionSummaryCards from "./components/collection-summary-cards";
 
 export default function CollectionsPage() {
   return (
@@ -12,6 +13,8 @@ export default function CollectionsPage() {
           Track and manage regular monthly donations.
         </p>
       </div>
+
+      <CollectionSummaryCards />
 
       <MonthlyCollectionOverview />
     </div>
