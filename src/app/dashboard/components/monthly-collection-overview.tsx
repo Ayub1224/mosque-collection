@@ -1,15 +1,21 @@
+
 "use client";
-import { useCollectionOverview } from "@/hooks/collections/useCollectionOverview";
+
 import { useMemo, useState } from "react";
 import { flexRender } from "@tanstack/react-table";
-
 import {
   getCoreRowModel,
   useLegacyTable,
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy";
 
+import { useCollectionOverview } from "@/hooks/collections/useCollectionOverview";
 import type { CollectionOverviewRow } from "@/types/collection-overview";
+
+import type {
+  MemberStatusFilter,
+  ContributionFilter,
+} from "../collections/components/collection-filters";
 
 const MONTHS = [
   { month: 4, label: "Apr" },
@@ -33,11 +39,6 @@ const formatCurrency = (amount: number) =>
     maximumFractionDigits: 0,
   }).format(amount);
 
-import type {
-  MemberStatusFilter,
-  ContributionFilter,
-} from "../collections/components/collection-filters";
-
 interface MonthlyCollectionOverviewProps {
   search?: string;
   memberStatus?: MemberStatusFilter;
@@ -49,12 +50,16 @@ export default function MonthlyCollectionOverview({
   memberStatus = "All",
   contribution = "All",
 }: MonthlyCollectionOverviewProps) {
-  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(
+    null,
+  );
+
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth();
 
-  const financialYearStart = currentMonth >= 3 ? currentYear : currentYear - 1;
+  const financialYearStart =
+    currentMonth >= 3 ? currentYear : currentYear - 1;
 
   const {
     data: overview,
@@ -63,6 +68,7 @@ export default function MonthlyCollectionOverview({
     error,
   } = useCollectionOverview(financialYearStart);
 
+  // Search and filter members
   const filteredRows = useMemo(() => {
     if (!overview) return [];
 
@@ -87,6 +93,7 @@ export default function MonthlyCollectionOverview({
     });
   }, [overview, search, memberStatus, contribution]);
 
+  // Desktop table columns
   const columns = useMemo<LegacyColumnDef<CollectionOverviewRow>[]>(
     () => [
       {
@@ -121,7 +128,9 @@ export default function MonthlyCollectionOverview({
                     : "text-[#94A3B8]"
                 }
               >
-                {monthData?.total ? formatCurrency(monthData.total) : "—"}
+                {monthData?.total
+                  ? formatCurrency(monthData.total)
+                  : "—"}
               </span>
             );
           },
@@ -149,6 +158,7 @@ export default function MonthlyCollectionOverview({
 
   return (
     <section className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+      {/* Section heading */}
       <h2 className="text-base font-semibold text-[#102744]">
         Monthly Collection Ledger
       </h2>
@@ -157,25 +167,41 @@ export default function MonthlyCollectionOverview({
         Showing {filteredRows.length} of {overview?.totalMembers ?? 0} members
       </p>
 
-      {isLoading ? (
+      {/* Loading state */}
+      {isLoading && (
         <p className="py-12 text-center text-sm text-[#64748B]">
           Loading collection data...
         </p>
-      ) : isError ? (
+      )}
+
+      {/* Error state */}
+      {!isLoading && isError && (
         <p className="py-12 text-center text-sm text-red-600">
           {error instanceof Error
             ? error.message
             : "Unable to load collection data."}
         </p>
-      ) : filteredRows.length === 0 ? (
+      )}
+
+      {/* Empty state */}
+      {!isLoading && !isError && filteredRows.length === 0 && (
         <div className="py-12 text-center">
-          <p className="text-sm font-medium text-[#172B4D]">No members found</p>
+          <p className="text-sm font-medium text-[#172B4D]">
+            No members found
+          </p>
           <p className="mt-1 text-xs text-[#64748B]">
             Try changing your search or filters.
           </p>
         </div>
-      ) : (
+      )}
+
+      {/* Collection records */}
+      {!isLoading && !isError && filteredRows.length > 0 && (
         <>
+          {/* ================================== */}
+          {/* DESKTOP LEDGER */}
+          {/* ================================== */}
+
           <div className="mt-5 hidden overflow-x-auto rounded-lg border border-[#E2E8F0] md:block">
             <table className="w-full min-w-[1500px] border-collapse text-left text-sm">
               <thead className="bg-[#F8FAFC]">
@@ -244,21 +270,29 @@ export default function MonthlyCollectionOverview({
               </tbody>
             </table>
           </div>
+
+          {/* ================================== */}
+          {/* MOBILE MEMBER CARDS */}
+          {/* ================================== */}
+
           <div className="mt-4 space-y-3 md:hidden">
             {filteredRows.map((row) => {
-              const isExpanded = expandedMemberId === row.member.memberId;
+              const isExpanded =
+                expandedMemberId === row.member.memberId;
 
               return (
                 <div
                   key={row.member.memberId}
                   className="overflow-hidden rounded-xl border border-[#E2E8F0] bg-white"
                 >
+                  {/* Member information */}
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-[#172B4D]">
                           {row.member.fullName}
                         </p>
+
                         <p className="mt-1 text-xs text-[#64748B]">
                           {row.member.phoneNumber}
                         </p>
@@ -277,9 +311,13 @@ export default function MonthlyCollectionOverview({
                       </span>
                     </div>
 
+                    {/* Annual total and expand button */}
                     <div className="mt-4 flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-[#64748B]">Annual Total</p>
+                        <p className="text-xs text-[#64748B]">
+                          Annual Total
+                        </p>
+
                         <p className="mt-1 text-lg font-semibold text-[#102744]">
                           {formatCurrency(row.annualTotal)}
                         </p>
@@ -296,6 +334,7 @@ export default function MonthlyCollectionOverview({
                         className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium text-[#17365D] hover:bg-[#F5F7FA]"
                       >
                         {isExpanded ? "Hide details" : "Monthly details"}
+
                         <svg
                           viewBox="0 0 24 24"
                           fill="none"
@@ -312,6 +351,7 @@ export default function MonthlyCollectionOverview({
                     </div>
                   </div>
 
+                  {/* Expandable monthly breakdown */}
                   {isExpanded && (
                     <div className="border-t border-[#E2E8F0] bg-[#F8FAFC] p-4">
                       <p className="mb-3 text-xs font-semibold text-[#64748B]">
@@ -329,7 +369,10 @@ export default function MonthlyCollectionOverview({
                               key={month}
                               className="rounded-lg border border-[#E2E8F0] bg-white p-2.5"
                             >
-                              <p className="text-xs text-[#64748B]">{label}</p>
+                              <p className="text-xs text-[#64748B]">
+                                {label}
+                              </p>
+
                               <p className="mt-1 text-sm font-semibold text-[#172B4D]">
                                 {monthData?.total
                                   ? formatCurrency(monthData.total)
