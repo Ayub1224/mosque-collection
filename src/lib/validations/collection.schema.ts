@@ -1,19 +1,26 @@
 import { z } from "zod";
 
+const donationDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.")
+  .refine((value) => {
+    const [year, month, day] = value.split("-").map(Number);
+
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    return (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+    );
+  }, "Please enter a valid calendar date.");
+
 export const collectionSchema = z.object({
   memberId: z.string().trim().min(1, "Please select a member."),
 
-  amount: z.coerce
-    .number()
-    .positive("Amount must be greater than zero."),
+  amount: z.coerce.number().positive("Amount must be greater than zero."),
 
-  donationDate: z
-    .string()
-    .min(1, "Donation date is required.")
-    .refine(
-      (value) => !Number.isNaN(Date.parse(value)),
-      "Please enter a valid donation date.",
-    ),
+  donationDate: donationDateSchema,
 
   note: z.string().trim().optional().default(""),
 });
@@ -25,14 +32,7 @@ export const updateCollectionSchema = z
       .positive("Amount must be greater than zero.")
       .optional(),
 
-    donationDate: z
-      .string()
-      .min(1, "Donation date is required.")
-      .refine(
-        (value) => !Number.isNaN(Date.parse(value)),
-        "Please enter a valid donation date.",
-      )
-      .optional(),
+    donationDate: donationDateSchema.optional(),
 
     note: z.string().trim().optional(),
   })
