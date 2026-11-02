@@ -1,8 +1,8 @@
-
 "use client";
 
 import { useMemo, useState } from "react";
 import { flexRender } from "@tanstack/react-table";
+import type { Collection } from "@/types/collection";
 import {
   getCoreRowModel,
   useLegacyTable,
@@ -39,6 +39,13 @@ const formatCurrency = (amount: number) =>
     maximumFractionDigits: 0,
   }).format(amount);
 
+interface SelectedMonth {
+  memberName: string;
+  memberId: string;
+  monthLabel: string;
+  donations: Collection[];
+}
+
 interface MonthlyCollectionOverviewProps {
   search?: string;
   memberStatus?: MemberStatusFilter;
@@ -50,7 +57,8 @@ export default function MonthlyCollectionOverview({
   memberStatus = "All",
   contribution = "All",
 }: MonthlyCollectionOverviewProps) {
-  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<SelectedMonth | null>(
     null,
   );
 
@@ -58,8 +66,7 @@ export default function MonthlyCollectionOverview({
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth();
 
-  const financialYearStart =
-    currentMonth >= 3 ? currentYear : currentYear - 1;
+  const financialYearStart = currentMonth >= 3 ? currentYear : currentYear - 1;
 
   const {
     data: overview,
@@ -121,17 +128,25 @@ export default function MonthlyCollectionOverview({
             );
 
             return (
-              <span
-                className={
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedMonth({
+                    memberName: row.original.member.fullName,
+                    memberId: row.original.member.memberId,
+                    monthLabel: label,
+                    donations: monthData?.donations ?? [],
+                  })
+                }
+                className={`rounded-md px-2 py-1 transition-colors hover:bg-[#EAF0F7] hover:text-[#102744] ${
                   monthData?.total
                     ? "font-medium text-[#17365D]"
                     : "text-[#94A3B8]"
-                }
+                }`}
+                aria-label={`View ${label} donations for ${row.original.member.fullName}`}
               >
-                {monthData?.total
-                  ? formatCurrency(monthData.total)
-                  : "—"}
-              </span>
+                {monthData?.total ? formatCurrency(monthData.total) : "—"}
+              </button>
             );
           },
         }),
@@ -186,9 +201,7 @@ export default function MonthlyCollectionOverview({
       {/* Empty state */}
       {!isLoading && !isError && filteredRows.length === 0 && (
         <div className="py-12 text-center">
-          <p className="text-sm font-medium text-[#172B4D]">
-            No members found
-          </p>
+          <p className="text-sm font-medium text-[#172B4D]">No members found</p>
           <p className="mt-1 text-xs text-[#64748B]">
             Try changing your search or filters.
           </p>
@@ -277,8 +290,7 @@ export default function MonthlyCollectionOverview({
 
           <div className="mt-4 space-y-3 md:hidden">
             {filteredRows.map((row) => {
-              const isExpanded =
-                expandedMemberId === row.member.memberId;
+              const isExpanded = expandedMemberId === row.member.memberId;
 
               return (
                 <div
@@ -314,9 +326,7 @@ export default function MonthlyCollectionOverview({
                     {/* Annual total and expand button */}
                     <div className="mt-4 flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-[#64748B]">
-                          Annual Total
-                        </p>
+                        <p className="text-xs text-[#64748B]">Annual Total</p>
 
                         <p className="mt-1 text-lg font-semibold text-[#102744]">
                           {formatCurrency(row.annualTotal)}
@@ -369,9 +379,7 @@ export default function MonthlyCollectionOverview({
                               key={month}
                               className="rounded-lg border border-[#E2E8F0] bg-white p-2.5"
                             >
-                              <p className="text-xs text-[#64748B]">
-                                {label}
-                              </p>
+                              <p className="text-xs text-[#64748B]">{label}</p>
 
                               <p className="mt-1 text-sm font-semibold text-[#172B4D]">
                                 {monthData?.total
