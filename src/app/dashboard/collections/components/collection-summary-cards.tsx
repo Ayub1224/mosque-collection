@@ -1,13 +1,10 @@
-
 "use client";
 
 import { useCollectionOverview } from "@/hooks/collections/useCollectionOverview";
 
 function getCurrentFinancialYearStart() {
   const now = new Date();
-  return now.getMonth() >= 3
-    ? now.getFullYear()
-    : now.getFullYear() - 1;
+  return now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
 }
 
 function formatCurrency(amount: number) {
@@ -27,9 +24,7 @@ export default function CollectionSummaryCards() {
 
   const thisMonthTotal =
     data?.rows.reduce((total, row) => {
-      const month = row.months.find(
-        (item) => item.month === currentMonth,
-      );
+      const month = row.months.find((item) => item.month === currentMonth);
 
       return total + (month?.total ?? 0);
     }, 0) ?? 0;
@@ -62,7 +57,7 @@ export default function CollectionSummaryCards() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {cards.map((card) => (
           <div
             key={card.label}
@@ -87,21 +82,19 @@ export default function CollectionSummaryCards() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
       {cards.map((card) => (
         <div
           key={card.label}
           className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm"
         >
-          <p className="text-sm font-medium text-[#64748B]">
-            {card.label}
-          </p>
+          <p className="text-sm font-medium text-[#64748B]">{card.label}</p>
 
-          <p className="mt-3 text-2xl font-semibold tracking-tight text-[#102744]">
+          <p className="mt-2 text-xl font-semibold tracking-tight text-[#102744] sm:mt-3 sm:text-2xl">
             {card.value}
           </p>
 
-          <p className="mt-2 text-xs text-[#64748B]">
+          <p className="mt-1.5 text-[11px] text-[#64748B] sm:mt-2 sm:text-xs">
             {card.description}
           </p>
         </div>
