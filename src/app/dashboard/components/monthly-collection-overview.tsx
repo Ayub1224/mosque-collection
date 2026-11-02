@@ -2,11 +2,10 @@
 import { useMemo } from "react";
 import { useCollectionOverview } from "@/hooks/collections/useCollectionOverview";
 import {
-  flexRender,
   getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
+  useLegacyTable,
+  type LegacyColumnDef,
+} from "@tanstack/react-table/legacy";
 
 import type { CollectionOverviewRow } from "@/types/collection-overview";
 
@@ -38,15 +37,15 @@ import type {
 } from "../collections/components/collection-filters";
 
 interface MonthlyCollectionOverviewProps {
-  search: string;
-  memberStatus: MemberStatusFilter;
-  contribution: ContributionFilter;
+  search?: string;
+  memberStatus?: MemberStatusFilter;
+  contribution?: ContributionFilter;
 }
 
 export default function MonthlyCollectionOverview({
-  search,
-  memberStatus,
-  contribution,
+  search = "",
+  memberStatus = "All",
+  contribution = "All",
 }: MonthlyCollectionOverviewProps) {
   const today = new Date();
   const currentYear = today.getFullYear();
@@ -85,7 +84,7 @@ export default function MonthlyCollectionOverview({
     });
   }, [overview, search, memberStatus, contribution]);
 
-  const columns = useMemo<ColumnDef<CollectionOverviewRow>[]>(
+const columns = useMemo<LegacyColumnDef<CollectionOverviewRow>[]>(
   () => [
     {
       id: "member",
@@ -102,27 +101,31 @@ export default function MonthlyCollectionOverview({
       ),
     },
 
-    ...MONTHS.map(({ month, label }) => ({
-      id: `month-${month}`,
-      header: label,
-      cell: ({ row }: { row: { original: CollectionOverviewRow } }) => {
-        const monthData = row.original.months.find(
-          (item) => item.month === month,
-        );
+    ...MONTHS.map(
+      ({ month, label }): LegacyColumnDef<CollectionOverviewRow> => ({
+        id: `month-${month}`,
+        header: label,
+        cell: ({ row }) => {
+          const monthData = row.original.months.find(
+            (item) => item.month === month,
+          );
 
-        return (
-          <span
-            className={
-              monthData?.total
-                ? "font-medium text-[#17365D]"
-                : "text-[#94A3B8]"
-            }
-          >
-            {monthData?.total ? formatCurrency(monthData.total) : "—"}
-          </span>
-        );
-      },
-    })),
+          return (
+            <span
+              className={
+                monthData?.total
+                  ? "font-medium text-[#17365D]"
+                  : "text-[#94A3B8]"
+              }
+            >
+              {monthData?.total
+                ? formatCurrency(monthData.total)
+                : "—"}
+            </span>
+          );
+        },
+      }),
+    ),
 
     {
       id: "annualTotal",
@@ -137,7 +140,7 @@ export default function MonthlyCollectionOverview({
   [],
 );
 
-const table = useReactTable({
+const table = useLegacyTable({
   data: filteredRows,
   columns,
   getCoreRowModel: getCoreRowModel(),
