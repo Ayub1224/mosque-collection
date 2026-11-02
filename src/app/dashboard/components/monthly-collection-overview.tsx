@@ -505,6 +505,12 @@ export default function MonthlyCollectionOverview({
                   Donation History
                 </h3>
 
+                {cancelCollectionMutation.isError && (
+                  <p className="mt-2 text-right text-xs text-red-600">
+                    {cancelCollectionMutation.error.message}
+                  </p>
+                )}
+
                 {selectedMonth.donations.length === 0 ? (
                   <div className="py-10 text-center">
                     <p className="text-sm font-medium text-[#172B4D]">
@@ -617,12 +623,6 @@ export default function MonthlyCollectionOverview({
                                 Cancel Donation
                               </button>
                             </div>
-                          )}
-
-                          {cancelCollectionMutation.isError && (
-                            <p className="mt-2 text-right text-xs text-red-600">
-                              {cancelCollectionMutation.error.message}
-                            </p>
                           )}
 
                           {editingDonationId === donation.collectionId &&
