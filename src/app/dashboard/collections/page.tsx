@@ -34,7 +34,11 @@ export default function CollectionsPage() {
         onContributionChange={setContribution}
       />
 
-      <MonthlyCollectionOverview />
+      <MonthlyCollectionOverview
+        search={search}
+        memberStatus={memberStatus}
+        contribution={contribution}
+      />
     </div>
   );
 }

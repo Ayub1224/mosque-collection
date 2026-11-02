@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 export type MemberStatusFilter = "All" | "Active" | "Inactive";
 export type ContributionFilter = "All" | "Contributors" | "No Contribution";
