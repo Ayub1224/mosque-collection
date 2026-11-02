@@ -552,6 +552,7 @@ export default function MonthlyCollectionOverview({
                             <div className="mt-3 flex justify-end">
                               <button
                                 type="button"
+                                disabled={updateCollectionMutation.isPending}
                                 onClick={() => {
                                   setEditingDonationId(donation.collectionId);
                                   setEditForm({
@@ -628,25 +629,11 @@ export default function MonthlyCollectionOverview({
                                       },
                                     },
                                     {
-                                      onSuccess: (updatedDonation) => {
-                                        setSelectedMonth((current) =>
-                                          current
-                                            ? {
-                                                ...current,
-                                                donations:
-                                                  current.donations.map(
-                                                    (item) =>
-                                                      item.collectionId ===
-                                                      updatedDonation.collectionId
-                                                        ? updatedDonation
-                                                        : item,
-                                                  ),
-                                              }
-                                            : current,
-                                        );
-
+                                      onSuccess: () => {
+                                        setSelectedMonth(null);
                                         setEditingDonationId(null);
                                         setEditForm(null);
+                                        updateCollectionMutation.reset();
                                       },
                                     },
                                   );
@@ -717,6 +704,10 @@ export default function MonthlyCollectionOverview({
                                 <div className="flex justify-end gap-2">
                                   <button
                                     type="button"
+                                    disabled={
+                                      cancelCollectionMutation.isPending ||
+                                      updateCollectionMutation.isPending
+                                    }
                                     onClick={() => {
                                       setEditingDonationId(null);
                                       setEditForm(null);
@@ -744,12 +735,12 @@ export default function MonthlyCollectionOverview({
                                 </div>
                               </form>
                             )}
-
-                          {donation.note && (
-                            <p className="mt-3 border-t border-[#E2E8F0] pt-3 text-xs text-[#64748B]">
-                              {donation.note}
-                            </p>
-                          )}
+                          {donation.note &&
+                            editingDonationId !== donation.collectionId && (
+                              <p className="mt-3 border-t border-[#E2E8F0] pt-3 text-xs text-[#64748B]">
+                                {donation.note}
+                              </p>
+                            )}
                         </div>
                       );
                     })}
