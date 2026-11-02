@@ -61,7 +61,7 @@ export default function CollectionSummaryCards() {
         {cards.map((card) => (
           <div
             key={card.label}
-            className="h-32 animate-pulse rounded-xl border border-[#E2E8F0] bg-white"
+           className="h-28 animate-pulse rounded-xl border border-[#E2E8F0] bg-white sm:h-32"
           />
         ))}
       </div>
@@ -86,7 +86,7 @@ export default function CollectionSummaryCards() {
       {cards.map((card) => (
         <div
           key={card.label}
-          className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm"
+      className="rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-sm sm:p-5"
         >
           <p className="text-sm font-medium text-[#64748B]">{card.label}</p>
 
