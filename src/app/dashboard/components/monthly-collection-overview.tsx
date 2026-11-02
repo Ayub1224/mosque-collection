@@ -552,7 +552,10 @@ export default function MonthlyCollectionOverview({
                             <div className="mt-3 flex justify-end">
                               <button
                                 type="button"
-                                disabled={updateCollectionMutation.isPending}
+                                disabled={
+                                  updateCollectionMutation.isPending ||
+                                  cancelCollectionMutation.isPending
+                                }
                                 onClick={() => {
                                   setEditingDonationId(donation.collectionId);
                                   setEditForm({
@@ -572,7 +575,10 @@ export default function MonthlyCollectionOverview({
                             <div className="mt-2 flex justify-end">
                               <button
                                 type="button"
-                                disabled={cancelCollectionMutation.isPending}
+                                disabled={
+                                  cancelCollectionMutation.isPending ||
+                                  updateCollectionMutation.isPending
+                                }
                                 onClick={() => {
                                   const confirmed = window.confirm(
                                     "Are you sure you want to cancel this donation? This action cannot be undone.",
@@ -611,6 +617,12 @@ export default function MonthlyCollectionOverview({
                                 Cancel Donation
                               </button>
                             </div>
+                          )}
+
+                          {cancelCollectionMutation.isError && (
+                            <p className="mt-2 text-right text-xs text-red-600">
+                              {cancelCollectionMutation.error.message}
+                            </p>
                           )}
 
                           {editingDonationId === donation.collectionId &&
