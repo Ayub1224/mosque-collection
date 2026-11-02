@@ -1,25 +1,15 @@
-import { Suspense } from "react";
-import { connection } from "next/server";
+
+"use client";
 
 const months = [
-  "Jan", "Feb", "Mar", "Apr",
-  "May", "Jun", "Jul", "Aug",
-  "Sep", "Oct", "Nov", "Dec",
+  "Apr", "May", "Jun", "Jul",
+  "Aug", "Sep", "Oct", "Nov",
+  "Dec", "Jan", "Feb", "Mar",
 ];
 
-async function CurrentYear() {
-  await connection();
-
+export default function MonthlyCollectionOverview() {
   const currentYear = new Date().getFullYear();
 
-  return (
-    <span className="w-fit rounded-lg border border-[#E2E8F0] bg-[#F5F7FA] px-3 py-2 text-sm font-medium text-[#17365D]">
-      {currentYear}
-    </span>
-  );
-}
-
-export default function MonthlyCollectionOverview() {
   return (
     <section className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
@@ -28,17 +18,13 @@ export default function MonthlyCollectionOverview() {
             Monthly Collection Overview
           </h2>
           <p className="mt-1 text-sm text-[#64748B]">
-            Collection trends throughout the year
+            Collection trends throughout the financial year
           </p>
         </div>
 
-        <Suspense
-          fallback={
-            <span className="h-9 w-20 animate-pulse rounded-lg bg-[#E2E8F0]" />
-          }
-        >
-          <CurrentYear />
-        </Suspense>
+        <span className="w-fit rounded-lg border border-[#E2E8F0] bg-[#F5F7FA] px-3 py-2 text-sm font-medium text-[#17365D]">
+          FY {currentYear}–{currentYear + 1}
+        </span>
       </div>
 
       <div className="mt-8">
