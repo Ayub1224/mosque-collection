@@ -398,6 +398,149 @@ export default function MonthlyCollectionOverview({
           </div>
         </>
       )}
+
+      {selectedMonth && (
+        <>
+          {/* Backdrop */}
+          <button
+            type="button"
+            aria-label="Close donation details"
+            onClick={() => setSelectedMonth(null)}
+            className="fixed inset-0 z-40 bg-[#102744]/40"
+          />
+
+          {/* Responsive donation panel */}
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="donation-panel-title"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl md:inset-y-0 md:left-auto md:right-0 md:w-[440px] md:max-h-none md:rounded-none"
+          >
+            {/* Panel header */}
+            <div className="sticky top-0 z-10 border-b border-[#E2E8F0] bg-white px-5 py-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2
+                    id="donation-panel-title"
+                    className="text-lg font-semibold text-[#102744]"
+                  >
+                    Donation Details
+                  </h2>
+                  <p className="mt-1 text-sm text-[#64748B]">
+                    {selectedMonth.memberName}
+                  </p>
+                  <p className="text-xs text-[#64748B]">
+                    {selectedMonth.monthLabel}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedMonth(null)}
+                  className="rounded-lg p-2 text-[#64748B] hover:bg-[#F5F7FA]"
+                  aria-label="Close panel"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="h-5 w-5"
+                  >
+                    <path d="m6 6 12 12M18 6 6 18" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Donation summary */}
+            <div className="p-5">
+              <div className="rounded-xl bg-[#F5F7FA] p-4">
+                <p className="text-xs text-[#64748B]">
+                  Active collection total
+                </p>
+                <p className="mt-1 text-2xl font-semibold text-[#102744]">
+                  {formatCurrency(
+                    selectedMonth.donations
+                      .filter((donation) => donation.recordStatus === "Active")
+                      .reduce((total, donation) => total + donation.amount, 0),
+                  )}
+                </p>
+                <p className="mt-1 text-xs text-[#64748B]">
+                  {
+                    selectedMonth.donations.filter(
+                      (donation) => donation.recordStatus === "Active",
+                    ).length
+                  }{" "}
+                  active donation(s)
+                </p>
+              </div>
+
+              {/* Donation history */}
+              <div className="mt-6">
+                <h3 className="text-sm font-semibold text-[#172B4D]">
+                  Donation History
+                </h3>
+
+                {selectedMonth.donations.length === 0 ? (
+                  <div className="py-10 text-center">
+                    <p className="text-sm font-medium text-[#172B4D]">
+                      No donation records
+                    </p>
+                    <p className="mt-1 text-xs text-[#64748B]">
+                      No donations were recorded for this month.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-3 space-y-3">
+                    {selectedMonth.donations.map((donation) => {
+                      const isCancelled = donation.recordStatus === "Cancelled";
+
+                      return (
+                        <div
+                          key={donation.collectionId}
+                          className={`rounded-xl border p-4 ${
+                            isCancelled
+                              ? "border-[#E2E8F0] bg-[#F8FAFC] opacity-75"
+                              : "border-[#E2E8F0] bg-white"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-lg font-semibold text-[#102744]">
+                                {formatCurrency(donation.amount)}
+                              </p>
+                              <p className="mt-1 text-xs text-[#64748B]">
+                                {donation.donationDate}
+                              </p>
+                            </div>
+
+                            <span
+                              className={`rounded-full px-2 py-1 text-[10px] font-medium ${
+                                isCancelled
+                                  ? "bg-[#FEE2E2] text-[#991B1B]"
+                                  : "bg-[#DCFCE7] text-[#166534]"
+                              }`}
+                            >
+                              {donation.recordStatus}
+                            </span>
+                          </div>
+
+                          {donation.note && (
+                            <p className="mt-3 border-t border-[#E2E8F0] pt-3 text-xs text-[#64748B]">
+                              {donation.note}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </section>
   );
 }
