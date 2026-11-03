@@ -36,11 +36,18 @@ export default function AddCollectionDialog({
     if (!open) return;
 
     setSearch("");
+    setSelectedMember(null);
+  }, [open]);
 
-    if (!initialMemberId) {
-      setSelectedMember(null);
+  useEffect(() => {
+    if (!open || !initialMemberId || isLoading) return;
+
+    const member = members.find((item) => item.memberId === initialMemberId);
+
+    if (member) {
+      setSelectedMember(member);
     }
-  }, [open, initialMemberId]);
+  }, [open, initialMemberId, members, isLoading]);
 
   useEffect(() => {
     if (!open) return;

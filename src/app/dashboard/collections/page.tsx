@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import MonthlyCollectionOverview from "../components/monthly-collection-overview";
 import CollectionSummaryCards from "./components/collection-summary-cards";
@@ -13,11 +14,21 @@ import AddCollectionDialog from "../components/add-collection-dialog";
 import type { Member } from "@/types/member";
 
 export default function CollectionsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const memberIdFromUrl = searchParams.get("memberId");
   const [search, setSearch] = useState("");
   const [memberStatus, setMemberStatus] = useState<MemberStatusFilter>("All");
   const [contribution, setContribution] = useState<ContributionFilter>("All");
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+
+  useEffect(() => {
+    if (memberIdFromUrl) {
+      setIsAddCollectionOpen(true);
+    }
+  }, [memberIdFromUrl]);
 
   return (
     <div className="space-y-6">
@@ -60,7 +71,12 @@ export default function CollectionsPage() {
         onOpenChange={setIsAddCollectionOpen}
         onSelectMember={(member) => {
           setSelectedMember(member);
+
+          router.replace("/dashboard/collections", {
+            scroll: false,
+          });
         }}
+        initialMemberId={memberIdFromUrl}
       />
     </div>
   );
