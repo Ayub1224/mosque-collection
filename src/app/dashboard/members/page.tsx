@@ -227,8 +227,13 @@ export default function MembersPage() {
                     className="border-t border-[#E2E8F0]"
                   >
                     <td className="px-5 py-4">{member.memberId}</td>
-                    <td className="px-5 py-4 font-medium text-[#172B4D]">
-                      {member.fullName}
+                    <td className="px-5 py-4">
+                      <Link
+                        href={`/dashboard/members/${encodeURIComponent(member.memberId)}`}
+                        className="font-medium text-[#172B4D] hover:text-[#17365D] hover:underline"
+                      >
+                        {member.fullName}
+                      </Link>
                     </td>
                     <td className="px-5 py-4">{member.phoneNumber}</td>
                     <td className="px-5 py-4">{member.address || "—"}</td>
@@ -294,9 +299,12 @@ export default function MembersPage() {
             filteredMembers.map((member) => (
               <div key={member.memberId} className="space-y-2 p-5">
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-[#172B4D]">
+                  <Link
+                    href={`/dashboard/members/${encodeURIComponent(member.memberId)}`}
+                    className="font-semibold text-[#172B4D] hover:text-[#17365D] hover:underline"
+                  >
                     {member.fullName}
-                  </p>
+                  </Link>
                   <span className="text-xs text-[#64748B]">
                     {member.status}
                   </span>
