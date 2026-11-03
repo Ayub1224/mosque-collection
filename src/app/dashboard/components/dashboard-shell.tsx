@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import SignOutButton from "@/components/sign-out-button";
+import { AdminProfileProvider } from "./admin-profile-context";
 
 type DashboardShellProps = {
   children: React.ReactNode;
@@ -146,7 +147,9 @@ export default function DashboardShell({
         </header>
 
         <main className="px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-8">
-          {children}
+          <AdminProfileProvider adminName={adminName}>
+            {children}
+          </AdminProfileProvider>
         </main>
       </div>
 
