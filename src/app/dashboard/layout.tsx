@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { auth, isAdminEmail } from "@/auth";
 import { redirect } from "next/navigation";
+import { getAdminProfileByEmail } from "@/lib/admin-profiles";
 import DashboardShell from "./components/dashboard-shell";
 
 type DashboardLayoutProps = {
@@ -11,15 +12,26 @@ async function AuthenticatedDashboard({
   children,
 }: DashboardLayoutProps) {
   const session = await auth();
+  const email = session?.user?.email;
 
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!email || !isAdminEmail(email)) {
     redirect("/");
   }
 
+  const adminProfile = await getAdminProfileByEmail(email);
+
+  if (!adminProfile?.profileCompleted) {
+    redirect("/profile-setup");
+  }
+
   return (
-    <DashboardShell adminEmail={session.user.email}>
-      {children}
-    </DashboardShell>
+<DashboardShell
+  adminEmail={email}
+  adminName={adminProfile.name}
+  adminDesignation={adminProfile.designation}
+>
+  {children}
+</DashboardShell>
   );
 }
 
