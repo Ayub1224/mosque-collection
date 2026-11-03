@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -8,6 +7,7 @@ import SummaryCard from "./summary-card";
 import { useMembers } from "@/hooks/members/use-members";
 import { useCollections } from "@/hooks/collections/useCollections";
 import MonthlyCollectionOverview from "./monthly-collection-overview";
+import MonthlyCollectionSummary from "./monthly-collection-summary";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -55,7 +55,8 @@ export default function DashboardOverview() {
       },
       {
         title: "Active Members",
-        value: members.filter((member) => member.status === "Active")
+        value: members
+          .filter((member) => member.status === "Active")
           .length.toLocaleString("en-IN"),
         description: "Currently active members",
       },
@@ -79,9 +80,7 @@ export default function DashboardOverview() {
     <div className="space-y-8">
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-[#102744]">
-            Dashboard
-          </h1>
+          <h1 className="text-2xl font-semibold text-[#102744]">Dashboard</h1>
 
           <p className="mt-1 text-sm text-[#64748B]">
             Welcome back! Here's an overview of your mosque collections.
@@ -124,6 +123,7 @@ export default function DashboardOverview() {
         )}
       </section>
       <MonthlyCollectionOverview />
+      <MonthlyCollectionSummary />
     </div>
   );
 }
