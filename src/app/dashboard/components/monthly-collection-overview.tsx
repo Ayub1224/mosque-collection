@@ -152,10 +152,10 @@ export default function MonthlyCollectionOverview({
                     donations: monthData?.donations ?? [],
                   })
                 }
-                className={`rounded-md px-2 py-1 transition-colors hover:bg-[#EAF0F7] hover:text-[#102744] ${
+                className={`inline-flex min-w-16 items-center justify-center rounded-lg px-2.5 py-1.5 text-xs tabular-nums transition-colors ${
                   monthData?.total
-                    ? "font-medium text-[#17365D]"
-                    : "text-[#94A3B8]"
+                    ? "bg-[#F1F5F9] font-semibold text-[#17365D] hover:bg-[#E2EAF3]"
+                    : "font-normal text-[#94A3B8] hover:bg-[#F8FAFC] hover:text-[#64748B]"
                 }`}
                 aria-label={`View ${label} donations for ${row.original.member.fullName}`}
               >
@@ -231,7 +231,7 @@ export default function MonthlyCollectionOverview({
 
           <div className="mt-5 hidden overflow-x-auto rounded-lg border border-[#E2E8F0] md:block">
             <table className="w-full min-w-[1500px] border-collapse text-left text-sm">
-              <thead className="bg-[#F8FAFC]">
+              <thead className="bg-[#F1F5F9]">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header, index) => {
@@ -242,11 +242,11 @@ export default function MonthlyCollectionOverview({
                       return (
                         <th
                           key={header.id}
-                          className={`border-b border-[#E2E8F0] px-4 py-4 text-xs font-semibold text-[#64748B] ${
+                          className={`border-b border-[#E2E8F0] px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wide text-[#64748B] ${
                             isMember
-                              ? "sticky left-0 z-20 min-w-[220px] bg-[#F8FAFC]"
+                              ? "sticky left-0 z-20 min-w-[220px] bg-[#F1F5F9]"
                               : isAnnualTotal
-                                ? "sticky right-0 z-20 min-w-[150px] bg-[#F8FAFC] text-right"
+                                ? "sticky right-0 z-20 min-w-[150px] border-l border-[#E2E8F0] bg-[#E8EEF6] text-right"
                                 : "min-w-[110px] text-center"
                           }`}
                         >
@@ -267,7 +267,7 @@ export default function MonthlyCollectionOverview({
                 {table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="transition-colors hover:bg-[#F8FAFC]"
+                    className="transition-colors duration-150 hover:bg-[#F8FAFC]"
                   >
                     {row.getVisibleCells().map((cell, index) => {
                       const isMember = index === 0;
@@ -281,7 +281,7 @@ export default function MonthlyCollectionOverview({
                             isMember
                               ? "sticky left-0 z-10 min-w-[220px] bg-white"
                               : isAnnualTotal
-                                ? "sticky right-0 z-10 min-w-[150px] bg-white text-right"
+                                ? "sticky right-0 z-10 min-w-[150px] border-l border-[#E2E8F0] bg-[#F8FAFC] text-right"
                                 : "min-w-[110px] text-center"
                           }`}
                         >

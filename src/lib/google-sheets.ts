@@ -7,6 +7,8 @@ export const MEMBERS_SHEET_NAME = "Members";
 export const MEMBERS_SHEET_RANGE = `${MEMBERS_SHEET_NAME}!A:H`;
 export const COLLECTIONS_SHEET_NAME = "Collections";
 export const COLLECTIONS_SHEET_RANGE = `${COLLECTIONS_SHEET_NAME}!A:H`;
+export const ADMIN_PROFILES_SHEET_NAME = "AdminProfiles";
+export const ADMIN_PROFILES_SHEET_RANGE = `${ADMIN_PROFILES_SHEET_NAME}!A:H`;
 
 export function getSpreadsheetId(): string {
   const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;

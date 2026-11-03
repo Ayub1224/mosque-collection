@@ -69,20 +69,24 @@ export default function MonthlyCollectionSummary() {
 
   return (
     <section className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+      {/* Chart heading */}
+      <div className="flex flex-col justify-between gap-4 border-b border-[#F1F5F9] pb-5 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-base font-semibold text-[#102744]">
+          <h2 className="text-base font-semibold tracking-tight text-[#102744]">
             Monthly Collection Summary
           </h2>
 
           <p className="mt-1 text-xs text-[#64748B]">
-            Collection performance from January to December {currentYear}
+            Monthly collection performance
           </p>
         </div>
 
-        <div>
-          <p className="text-xs text-[#64748B]">Total collected this year</p>
-          <p className="mt-1 text-lg font-semibold text-[#102744]">
+        <div className="rounded-lg bg-[#F5F7FA] px-4 py-3 sm:min-w-44">
+          <p className="text-xs font-medium text-[#64748B]">
+            Total collected this year
+          </p>
+
+          <p className="mt-1 text-xl font-bold tracking-tight text-[#102744]">
             {isLoading ? "Loading..." : formatCurrency(annualTotal)}
           </p>
         </div>
@@ -97,7 +101,7 @@ export default function MonthlyCollectionSummary() {
           Unable to load monthly collection data.
         </p>
       ) : (
-        <div className="mt-8">
+        <div className="mt-6">
           <div className="grid grid-cols-6 gap-3 sm:grid-cols-12 sm:gap-4">
             {monthlyData.map((item) => {
               const barHeight =
@@ -109,18 +113,18 @@ export default function MonthlyCollectionSummary() {
                   className="flex min-w-0 flex-col items-center"
                   title={`${item.label}: ${formatCurrency(item.total)}`}
                 >
-                  <p className="mb-2 h-4 truncate text-[10px] font-medium text-[#64748B]">
+                  <p className="mb-3 h-4 truncate text-[10px] font-medium tabular-nums text-[#64748B] sm:text-xs">
                     {formatCompactCurrency(item.total)}
                   </p>
 
-                  <div className="flex h-40 w-full items-end justify-center rounded-t-md bg-[#F5F7FA]">
+                  <div className="flex h-40 w-full items-end justify-center overflow-hidden rounded-lg bg-[#F5F7FA] sm:h-44">
                     <div
-                      className="w-full max-w-9 rounded-t-md bg-[#17365D] transition-all duration-500"
+                      className="w-full max-w-9 rounded-t-md bg-gradient-to-t from-[#102744] to-[#315783] transition-all duration-500"
                       style={{ height: `${barHeight}%` }}
                     />
                   </div>
 
-                  <p className="mt-2 text-xs font-medium text-[#64748B]">
+                  <p className="mt-3 text-xs font-medium text-[#64748B]">
                     {item.label}
                   </p>
                 </div>
@@ -129,7 +133,7 @@ export default function MonthlyCollectionSummary() {
           </div>
 
           {annualTotal === 0 && (
-            <p className="mt-4 text-center text-xs text-[#94A3B8]">
+            <p className="mt-5 text-center text-xs text-[#94A3B8]">
               No collections recorded for {currentYear} yet.
             </p>
           )}

@@ -8,6 +8,7 @@ import { useMembers } from "@/hooks/members/use-members";
 import { useCollections } from "@/hooks/collections/useCollections";
 import MonthlyCollectionOverview from "./monthly-collection-overview";
 import MonthlyCollectionSummary from "./monthly-collection-summary";
+import { useAdminName } from "./admin-profile-context";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -19,6 +20,7 @@ const formatCurrency = (amount: number) =>
 export default function DashboardOverview() {
   const membersQuery = useMembers();
   const collectionsQuery = useCollections();
+  const adminName = useAdminName();
 
   const summary = useMemo(() => {
     const members = membersQuery.data ?? [];
@@ -80,24 +82,30 @@ export default function DashboardOverview() {
     <div className="space-y-8">
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-[#102744]">Dashboard</h1>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+            Mosque Administration
+          </p>
 
-          <p className="mt-1 text-sm text-[#64748B]">
-            Welcome back! Here's an overview of your mosque collections.
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#102744] sm:text-3xl">
+            Assalamu Alaikum, {adminName}
+          </h1>
+
+          <p className="mt-2 text-sm text-[#64748B]">
+            Here's what's happening with your mosque today.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <Link
             href="/dashboard/members/new"
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#17365D] transition hover:bg-[#F5F7FA]"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#17365D] transition hover:border-[#17365D] hover:bg-[#F8FAFC]"
           >
             + Add Member
           </Link>
 
           <Link
             href="/dashboard/collections"
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-4 text-sm font-medium text-white transition hover:bg-[#17365D]"
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-4 text-sm font-medium text-white shadow-sm transition hover:bg-[#17365D]"
           >
             + Add Collection
           </Link>

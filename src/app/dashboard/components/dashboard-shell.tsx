@@ -4,10 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import SignOutButton from "@/components/sign-out-button";
+import { AdminProfileProvider } from "./admin-profile-context";
 
 type DashboardShellProps = {
   children: React.ReactNode;
   adminEmail: string;
+  adminName: string;
+  adminDesignation: string;
 };
 
 const navigation = [
@@ -19,6 +22,8 @@ const navigation = [
 export default function DashboardShell({
   children,
   adminEmail,
+  adminName,
+  adminDesignation,
 }: DashboardShellProps) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -97,11 +102,16 @@ export default function DashboardShell({
         <div className="border-t border-[#E2E8F0] p-4">
           <div className="mb-3 flex min-w-0 items-center gap-3 px-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EAF0F7] text-sm font-semibold text-[#17365D]">
-              {adminEmail.slice(0, 1).toUpperCase()}
+              {adminName.slice(0, 1).toUpperCase()}
             </div>
+
             <div className="min-w-0">
-              <p className="text-xs font-medium text-[#172B4D]">Administrator</p>
-              <p className="truncate text-[11px] text-[#64748B]">{adminEmail}</p>
+              <p className="truncate text-xs font-semibold text-[#172B4D]">
+                {adminName}
+              </p>
+              <p className="truncate text-[11px] text-[#64748B]">
+                {adminDesignation}
+              </p>
             </div>
           </div>
           <SignOutButton />
@@ -129,15 +139,17 @@ export default function DashboardShell({
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs text-[#64748B]">
-            <span className="hidden sm:inline">Signed in as</span>
-            <span className="max-w-40 truncate font-medium text-[#172B4D]">
-              {adminEmail}
+            <span className="hidden sm:inline">Welcome,</span>
+            <span className="max-w-40 truncate font-semibold text-[#172B4D]">
+              {adminName}
             </span>
           </div>
         </header>
 
         <main className="px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-8">
-          {children}
+          <AdminProfileProvider adminName={adminName}>
+            {children}
+          </AdminProfileProvider>
         </main>
       </div>
 
@@ -173,7 +185,14 @@ export default function DashboardShell({
 function NavIcon({ name }: { name: string }) {
   if (name === "members") {
     return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-5 w-5" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        className="h-5 w-5"
+        aria-hidden="true"
+      >
         <circle cx="9" cy="8" r="3.2" />
         <path d="M3.5 19v-1.2A4.8 4.8 0 0 1 8.3 13h1.4a4.8 4.8 0 0 1 4.8 4.8V19M16 5.2a3.2 3.2 0 0 1 0 6.1M17 14h.7a3.8 3.8 0 0 1 3.8 3.8V19" />
       </svg>
@@ -182,7 +201,14 @@ function NavIcon({ name }: { name: string }) {
 
   if (name === "collection") {
     return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-5 w-5" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        className="h-5 w-5"
+        aria-hidden="true"
+      >
         <rect x="3" y="5" width="18" height="14" rx="2" />
         <path d="M3 10h18M7 15h3" />
       </svg>
@@ -190,7 +216,14 @@ function NavIcon({ name }: { name: string }) {
   }
 
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-5 w-5" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
       <rect x="3" y="3" width="8" height="8" rx="1.5" />
       <rect x="13" y="3" width="8" height="5" rx="1.5" />
       <rect x="13" y="10" width="8" height="11" rx="1.5" />
@@ -201,7 +234,14 @@ function NavIcon({ name }: { name: string }) {
 
 function MosqueIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-6 w-6" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className="h-6 w-6"
+      aria-hidden="true"
+    >
       <path d="M3 20h18M5 20v-8h14v8M8 12V9a4 4 0 0 1 8 0v3M12 3v2M10.5 3h3M8 20v-4h3v4M15 20v-4h1v4M3 12l9-5 9 5" />
     </svg>
   );
@@ -209,7 +249,14 @@ function MosqueIcon() {
 
 function MenuIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
       <path d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   );
@@ -217,7 +264,14 @@ function MenuIcon() {
 
 function CloseIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
       <path d="m6 6 12 12M18 6 6 18" />
     </svg>
   );
