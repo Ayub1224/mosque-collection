@@ -22,9 +22,6 @@ export default function AddCollectionForm({
 }: AddCollectionFormProps) {
   const createCollectionMutation = useCreateCollection();
   const [submitError, setSubmitError] = useState("");
-  const [amount, setAmount] = useState("");
-  const [donationDate, setDonationDate] = useState("");
-  const [note, setNote] = useState("");
 
   type CollectionFormValues = z.input<typeof collectionSchema>;
 
@@ -184,12 +181,10 @@ export default function AddCollectionForm({
                   placeholder="0"
                   className="h-full min-w-0 flex-1 bg-transparent text-2xl font-semibold text-[#102744] outline-none placeholder:text-[#94A3B8]"
                 />
-                {errors.amount && (
-                  <p className="text-xs text-red-600">
-                    {errors.amount.message}
-                  </p>
-                )}
               </div>
+              {errors.amount && (
+                <p className="text-xs text-red-600">{errors.amount.message}</p>
+              )}
 
               <div className="flex flex-wrap items-center gap-2">
                 <span className="mr-1 text-[11px] font-medium uppercase text-[#64748B]">
