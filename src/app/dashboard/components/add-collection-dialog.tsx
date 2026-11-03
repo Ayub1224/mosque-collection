@@ -1,25 +1,28 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, X, UserRound, Loader2, AlertCircle } from "lucide-react";
+import { Search, X, UserRound, Loader2, AlertCircle, Plus } from "lucide-react";
 
 import { useMembers } from "@/hooks/members/use-members";
 import type { Member } from "@/types/member";
+import { useRouter } from "next/navigation";
 
 interface AddCollectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelectMember: (member: Member) => void;
+  initialMemberId?: string | null;
 }
 
 export default function AddCollectionDialog({
   open,
   onOpenChange,
   onSelectMember,
+  initialMemberId,
 }: AddCollectionDialogProps) {
   const [search, setSearch] = useState("");
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const router = useRouter();
 
   const {
     data: members = [],
@@ -30,11 +33,14 @@ export default function AddCollectionDialog({
   } = useMembers();
 
   useEffect(() => {
-    if (open) {
-      setSearch("");
+    if (!open) return;
+
+    setSearch("");
+
+    if (!initialMemberId) {
       setSelectedMember(null);
     }
-  }, [open]);
+  }, [open, initialMemberId]);
 
   useEffect(() => {
     if (!open) return;
@@ -139,9 +145,7 @@ export default function AddCollectionDialog({
           {isLoading ? (
             <div className="flex min-h-[220px] flex-col items-center justify-center gap-3">
               <Loader2 className="h-6 w-6 animate-spin text-[#17365D]" />
-              <p className="text-sm text-[#64748B]">
-                Loading members...
-              </p>
+              <p className="text-sm text-[#64748B]">Loading members...</p>
             </div>
           ) : isError ? (
             <div className="flex min-h-[220px] flex-col items-center justify-center text-center">
@@ -180,12 +184,23 @@ export default function AddCollectionDialog({
                   ? "Try searching with a different name or phone number."
                   : "Register a member before recording a collection."}
               </p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenChange(false);
+                  router.push("/dashboard/members/new?returnTo=collection");
+                }}
+                className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#102744] px-4 text-sm font-medium text-white transition hover:bg-[#17365D]"
+              >
+                <Plus size={16} />
+                Add New Member
+              </button>
             </div>
           ) : (
             <div className="space-y-2">
               {filteredMembers.map((member) => {
-                const isSelected =
-                  selectedMember?.memberId === member.memberId;
+                const isSelected = selectedMember?.memberId === member.memberId;
 
                 return (
                   <button

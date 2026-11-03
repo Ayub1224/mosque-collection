@@ -43,9 +43,19 @@ export default function AddMemberPage() {
     setSubmitMessage("");
 
     try {
-      await createMemberMutation.mutateAsync(values);
+      const newMember = await createMemberMutation.mutateAsync(values);
 
-      router.push("/dashboard/members");
+      const returnToCollection =
+        new URLSearchParams(window.location.search).get("returnTo") ===
+        "collection";
+
+      if (returnToCollection) {
+        router.push(
+          `/dashboard/collections?memberId=${encodeURIComponent(newMember.memberId)}`,
+        );
+      } else {
+        router.push("/dashboard/members");
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to register member.";
