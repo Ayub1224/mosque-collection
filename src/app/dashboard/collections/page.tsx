@@ -12,6 +12,7 @@ import CollectionFilters, {
 import { Plus } from "lucide-react";
 import AddCollectionDialog from "../components/add-collection-dialog";
 import type { Member } from "@/types/member";
+import AddCollectionForm from "../components/add-collection-form";
 
 export default function CollectionsPage() {
   const router = useRouter();
@@ -66,18 +67,31 @@ export default function CollectionsPage() {
         memberStatus={memberStatus}
         contribution={contribution}
       />
-      <AddCollectionDialog
-        open={isAddCollectionOpen}
-        onOpenChange={setIsAddCollectionOpen}
-        onSelectMember={(member) => {
-          setSelectedMember(member);
+      {selectedMember ? (
+        <AddCollectionForm
+          member={selectedMember}
+          onChangeMember={() => {
+            setSelectedMember(null);
+            setIsAddCollectionOpen(true);
+          }}
+          onClose={() => {
+            setSelectedMember(null);
+          }}
+        />
+      ) : (
+        <AddCollectionDialog
+          open={isAddCollectionOpen}
+          onOpenChange={setIsAddCollectionOpen}
+          onSelectMember={(member) => {
+            setSelectedMember(member);
 
-          router.replace("/dashboard/collections", {
-            scroll: false,
-          });
-        }}
-        initialMemberId={memberIdFromUrl}
-      />
+            router.replace("/dashboard/collections", {
+              scroll: false,
+            });
+          }}
+          initialMemberId={memberIdFromUrl}
+        />
+      )}
     </div>
   );
 }

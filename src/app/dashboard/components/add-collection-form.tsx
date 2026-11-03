@@ -8,6 +8,8 @@ import { collectionSchema } from "@/lib/validations/collection.schema";
 import type { z } from "zod";
 import { useState } from "react";
 import { useCreateCollection } from "@/hooks/collections/useCreateCollection";
+import type { Collection } from "@/types/collection";
+import CollectionSuccessDialog from "../collections/components/collection-success-dialog";
 
 interface AddCollectionFormProps {
   member: Member;
@@ -22,6 +24,9 @@ export default function AddCollectionForm({
 }: AddCollectionFormProps) {
   const createCollectionMutation = useCreateCollection();
   const [submitError, setSubmitError] = useState("");
+  const [savedCollection, setSavedCollection] = useState<Collection | null>(
+    null,
+  );
 
   type CollectionFormValues = z.input<typeof collectionSchema>;
 
@@ -30,6 +35,7 @@ export default function AddCollectionForm({
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<CollectionFormValues>({
     resolver: zodResolver(collectionSchema),
@@ -50,9 +56,10 @@ export default function AddCollectionForm({
         memberId: member.memberId,
       });
 
-      await createCollectionMutation.mutateAsync(validatedValues);
+      const createdCollection =
+        await createCollectionMutation.mutateAsync(validatedValues);
 
-      onClose();
+      setSavedCollection(createdCollection);
     } catch (error) {
       console.error("Failed to create collection:", error);
 
@@ -72,6 +79,27 @@ export default function AddCollectionForm({
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+
+  if (savedCollection) {
+    return (
+      <CollectionSuccessDialog
+        collection={savedCollection}
+        member={member}
+        onAddAnother={() => {
+          reset({
+            memberId: member.memberId,
+            amount: 0,
+            donationDate: new Date().toLocaleDateString("en-CA"),
+            note: "",
+          });
+
+          setSubmitError("");
+          setSavedCollection(null);
+        }}
+        onDone={onClose}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#102744]/40 p-3 backdrop-blur-sm sm:p-5">
