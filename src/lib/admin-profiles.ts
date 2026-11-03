@@ -26,7 +26,7 @@ function mapRowToProfile(row: string[]): AdminProfile {
     designation: String(row[2] ?? ""),
     language: "en",
     theme: "blue",
-    profileCompleted: String(row[5]).toLowerCase() === "true",
+    profileCompleted: String(row[5] ?? "").toLowerCase() === "true",
     createdAt: String(row[6] ?? ""),
     updatedAt: String(row[7] ?? ""),
   };
@@ -54,17 +54,7 @@ export async function getAdminProfileByEmail(
     return null;
   }
 
-  const profile = mapRowToProfile(matchingRow);
-
-  // Preserve saved preferences when reading the profile.
-  const language = String(matchingRow[3] ?? "en");
-  const theme = String(matchingRow[4] ?? "blue");
-
-  return {
-    ...profile,
-    language: language === "en" ? "en" : "en",
-    theme: theme === "blue" ? "blue" : "blue",
-  };
+  return mapRowToProfile(matchingRow);
 }
 
 export async function saveAdminProfile({
@@ -95,18 +85,14 @@ export async function saveAdminProfile({
   const existingRow =
     existingRowIndex > 0 ? rows[existingRowIndex] : undefined;
 
-  const createdAt = String(existingRow?.[6] ?? now);
-  const language = String(existingRow?.[3] ?? "en");
-  const theme = String(existingRow?.[4] ?? "blue");
-
   const profile: AdminProfile = {
     email: normalizedEmail,
     name: name.trim(),
     designation: designation.trim(),
-    language: language === "en" ? "en" : "en",
-    theme: theme === "blue" ? "blue" : "blue",
+    language: "en",
+    theme: "blue",
     profileCompleted: true,
-    createdAt,
+    createdAt: String(existingRow?.[6] ?? now),
     updatedAt: now,
   };
 
@@ -121,26 +107,18 @@ export async function saveAdminProfile({
     profile.updatedAt,
   ]];
 
-  if (existingRowIndex > 0) {
-    // Update the existing admin profile.
-    const sheetRowNumber = existingRowIndex + 1;
+  // Update an existing profile or write to the next available row.
+  const sheetRowNumber =
+    existingRowIndex > 0 ? existingRowIndex + 1 : rows.length + 1;
 
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: `${ADMIN_PROFILES_SHEET_NAME}!A${sheetRowNumber}:H${sheetRowNumber}`,
-      valueInputOption: "RAW",
-      requestBody: { values },
-    });
-  } else {
-    // Insert a new admin profile.
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: ADMIN_PROFILES_SHEET_RANGE,
-      valueInputOption: "RAW",
-      insertDataOption: "INSERT_ROWS",
-      requestBody: { values },
-    });
-  }
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `${ADMIN_PROFILES_SHEET_NAME}!A${sheetRowNumber}:H${sheetRowNumber}`,
+    valueInputOption: "RAW",
+    requestBody: {
+      values,
+    },
+  });
 
   return profile;
 }
