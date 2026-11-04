@@ -13,7 +13,9 @@ import { useCancelCollection } from "@/hooks/collections/useCancelCollection";
 
 import { useCollectionOverview } from "@/hooks/collections/useCollectionOverview";
 import type { CollectionOverviewRow } from "@/types/collection-overview";
-
+import { SiWhatsapp } from "react-icons/si";
+import type { Member } from "@/types/member";
+import WhatsAppReminderDialog from "../collections/components/whatsapp-reminder-dialog";
 import type {
   MemberStatusFilter,
   ContributionFilter,
@@ -33,6 +35,34 @@ const MONTHS = [
   { month: 2, label: "Feb" },
   { month: 3, label: "Mar" },
 ];
+
+interface SelectedReminder {
+  member: Member;
+  month: number;
+  year: number;
+}
+
+function getFinancialYearMonthYear(
+  month: number,
+  financialYearStart: number,
+): number {
+  return month >= 4 ? financialYearStart : financialYearStart + 1;
+}
+
+function isCurrentOrPreviousMonth(month: number, year: number): boolean {
+  const now = new Date();
+
+  const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const targetMonth = new Date(year, month - 1, 1);
+
+  return (
+    targetMonth.getTime() === currentMonth.getTime() ||
+    targetMonth.getTime() === previousMonth.getTime()
+  );
+}
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -66,6 +96,9 @@ export default function MonthlyCollectionOverview({
   const [editingDonationId, setEditingDonationId] = useState<string | null>(
     null,
   );
+
+  const [selectedReminder, setSelectedReminder] =
+    useState<SelectedReminder | null>(null);
 
   const [editForm, setEditForm] = useState<{
     amount: string;
@@ -136,31 +169,66 @@ export default function MonthlyCollectionOverview({
         ({ month, label }): LegacyColumnDef<CollectionOverviewRow> => ({
           id: `month-${month}`,
           header: label,
+
           cell: ({ row }) => {
+            const member = row.original.member;
+
             const monthData = row.original.months.find(
               (item) => item.month === month,
             );
 
+            const monthYear = getFinancialYearMonthYear(
+              month,
+              financialYearStart,
+            );
+
+            const canSendReminder =
+              member.status === "Active" &&
+              (monthData?.total ?? 0) <= 0 &&
+              isCurrentOrPreviousMonth(month, monthYear);
+
             return (
-              <button
-                type="button"
-                onClick={() =>
-                  setSelectedMonth({
-                    memberName: row.original.member.fullName,
-                    memberId: row.original.member.memberId,
-                    monthLabel: label,
-                    donations: monthData?.donations ?? [],
-                  })
-                }
-                className={`inline-flex min-w-16 items-center justify-center rounded-lg px-2.5 py-1.5 text-xs tabular-nums transition-colors ${
-                  monthData?.total
-                    ? "bg-[#F1F5F9] font-semibold text-[#17365D] hover:bg-[#E2EAF3]"
-                    : "font-normal text-[#94A3B8] hover:bg-[#F8FAFC] hover:text-[#64748B]"
-                }`}
-                aria-label={`View ${label} donations for ${row.original.member.fullName}`}
-              >
-                {monthData?.total ? formatCurrency(monthData.total) : "—"}
-              </button>
+              <div className="group flex items-center justify-center gap-1">
+                {/* Existing donation details button */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedMonth({
+                      memberName: member.fullName,
+                      memberId: member.memberId,
+                      monthLabel: label,
+                      donations: monthData?.donations ?? [],
+                    })
+                  }
+                  className={`inline-flex min-w-16 items-center justify-center rounded-lg px-2.5 py-1.5 text-xs tabular-nums transition-colors ${
+                    monthData?.total
+                      ? "bg-[#F1F5F9] font-semibold text-[#17365D] hover:bg-[#E2EAF3]"
+                      : "font-normal text-[#94A3B8] hover:bg-[#F8FAFC] hover:text-[#64748B]"
+                  }`}
+                  aria-label={`View ${label} donations for ${member.fullName}`}
+                >
+                  {monthData?.total ? formatCurrency(monthData.total) : "—"}
+                </button>
+
+                {/* WhatsApp reminder action */}
+                {canSendReminder && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedReminder({
+                        member,
+                        month,
+                        year: monthYear,
+                      })
+                    }
+                    title={`Prepare ${label} reminder for ${member.fullName}`}
+                    aria-label={`Prepare WhatsApp reminder for ${member.fullName} for ${label}`}
+                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#16834A] opacity-100 transition hover:bg-[#EAF7EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16834A] md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                  >
+                    <SiWhatsapp size={17} className="text-[#25D366]" />
+                  </button>
+                )}
+              </div>
             );
           },
         }),
@@ -176,7 +244,7 @@ export default function MonthlyCollectionOverview({
         ),
       },
     ],
-    [],
+    [financialYearStart],
   );
 
   const table = useLegacyTable({
@@ -388,28 +456,63 @@ export default function MonthlyCollectionOverview({
                             (item) => item.month === month,
                           );
 
-                          return (
-                            <button
-                              key={month}
-                              type="button"
-                              onClick={() =>
-                                setSelectedMonth({
-                                  memberName: row.member.fullName,
-                                  memberId: row.member.memberId,
-                                  monthLabel: label,
-                                  donations: monthData?.donations ?? [],
-                                })
-                              }
-                              className="w-full rounded-lg border border-[#E2E8F0] bg-white p-2.5 text-left transition-colors hover:border-[#17365D] hover:bg-[#F8FAFC]"
-                            >
-                              <p className="text-xs text-[#64748B]">{label}</p>
+                          const monthYear = getFinancialYearMonthYear(
+                            month,
+                            financialYearStart,
+                          );
 
-                              <p className="mt-1 text-sm font-semibold text-[#172B4D]">
-                                {monthData?.total
-                                  ? formatCurrency(monthData.total)
-                                  : "—"}
-                              </p>
-                            </button>
+                          const canSendReminder =
+                            row.member.status === "Active" &&
+                            (monthData?.total ?? 0) <= 0 &&
+                            isCurrentOrPreviousMonth(month, monthYear);
+
+                          return (
+                            <div
+                              key={month}
+                              className="rounded-lg border border-[#E2E8F0] bg-white p-2.5"
+                            >
+                              <div className="flex items-start justify-between gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedMonth({
+                                      memberName: row.member.fullName,
+                                      memberId: row.member.memberId,
+                                      monthLabel: label,
+                                      donations: monthData?.donations ?? [],
+                                    })
+                                  }
+                                  className="min-w-0 flex-1 text-left"
+                                >
+                                  <p className="text-xs text-[#64748B]">
+                                    {label}
+                                  </p>
+
+                                  <p className="mt-1 text-sm font-semibold text-[#172B4D]">
+                                    {monthData?.total
+                                      ? formatCurrency(monthData.total)
+                                      : "—"}
+                                  </p>
+                                </button>
+
+                                {canSendReminder && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setSelectedReminder({
+                                        member: row.member,
+                                        month,
+                                        year: monthYear,
+                                      })
+                                    }
+                                    aria-label={`WhatsApp reminder for ${row.member.fullName}, ${label}`}
+                                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#16834A] hover:bg-[#EAF7EF]"
+                                  >
+                                    <SiWhatsapp size={17} className="text-[#25D366]" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           );
                         })}
                       </div>
@@ -762,6 +865,15 @@ export default function MonthlyCollectionOverview({
             </div>
           </div>
         </>
+      )}
+      {selectedReminder && (
+        <WhatsAppReminderDialog
+          open={true}
+          onClose={() => setSelectedReminder(null)}
+          member={selectedReminder.member}
+          month={selectedReminder.month}
+          year={selectedReminder.year}
+        />
       )}
     </section>
   );
