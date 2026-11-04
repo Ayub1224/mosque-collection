@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { useMembers } from "@/hooks/members/use-members";
 import { useUpdateMemberStatus } from "@/hooks/members/use-update-member-status";
@@ -18,8 +19,17 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function MembersPage() {
+  const searchParams = useSearchParams();
+
+  const statusFromUrl = searchParams.get("status");
+
+  const initialStatus =
+    statusFromUrl === "Active" || statusFromUrl === "Inactive"
+      ? statusFromUrl
+      : "All";
+
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
 
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 

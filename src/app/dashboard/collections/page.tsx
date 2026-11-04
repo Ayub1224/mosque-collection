@@ -19,6 +19,9 @@ export default function CollectionsPage() {
   const searchParams = useSearchParams();
 
   const memberIdFromUrl = searchParams.get("memberId");
+  const periodFromUrl = searchParams.get("period");
+
+  const collectionPeriod = periodFromUrl === "month" ? "month" : "year";
   const [search, setSearch] = useState("");
   const [memberStatus, setMemberStatus] = useState<MemberStatusFilter>("All");
   const [contribution, setContribution] = useState<ContributionFilter>("All");
@@ -66,6 +69,7 @@ export default function CollectionsPage() {
         search={search}
         memberStatus={memberStatus}
         contribution={contribution}
+        period={collectionPeriod}
       />
       {selectedMember ? (
         <AddCollectionForm
