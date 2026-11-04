@@ -1,4 +1,4 @@
-export type AdminLanguage = "en";
+export type AdminLanguage = "en" | "hi";
 
 export type AdminTheme = "blue";
 

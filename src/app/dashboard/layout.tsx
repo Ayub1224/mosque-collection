@@ -29,6 +29,7 @@ async function AuthenticatedDashboard({
   adminEmail={email}
   adminName={adminProfile.name}
   adminDesignation={adminProfile.designation}
+  initialLanguage={adminProfile.language}
 >
   {children}
 </DashboardShell>

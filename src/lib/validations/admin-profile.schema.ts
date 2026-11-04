@@ -12,7 +12,10 @@ export const adminProfileSchema = z.object({
     .trim()
     .min(2, "Designation must contain at least 2 characters.")
     .max(80, "Designation cannot exceed 80 characters."),
+  language: z.enum(["en", "hi"]),
 });
+
+export const adminLanguageSchema = z.object({ language: z.enum(["en", "hi"]) });
 
 export type AdminProfileFormValues = z.infer<
   typeof adminProfileSchema

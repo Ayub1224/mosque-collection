@@ -1,21 +1,16 @@
 "use client";
 
 import { useCollectionOverview } from "@/hooks/collections/useCollectionOverview";
+import { useLanguage } from "../../components/admin-profile-context";
 
 function getCurrentFinancialYearStart() {
   const now = new Date();
   return now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
 }
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 export default function CollectionSummaryCards() {
+  const { language, t } = useLanguage();
+  const locale = language === "hi" ? "hi-IN" : "en-IN";
   const financialYearStart = getCurrentFinancialYearStart();
   const { data, isLoading, isError, error } =
     useCollectionOverview(financialYearStart);
@@ -34,24 +29,24 @@ export default function CollectionSummaryCards() {
 
   const cards = [
     {
-      label: "Total Collection",
-      value: formatCurrency(data?.totalCollection ?? 0),
-      description: `Financial Year ${financialYearStart}–${financialYearStart + 1}`,
+      label: t("collection.total"),
+      value: new Intl.NumberFormat(locale, { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(data?.totalCollection ?? 0),
+      description: `${t("collection.financialYear")} ${financialYearStart.toLocaleString(locale)}–${(financialYearStart + 1).toLocaleString(locale)}`,
     },
     {
-      label: "This Month",
-      value: formatCurrency(thisMonthTotal),
-      description: "Collections received this month",
+      label: t("collection.thisMonth"),
+      value: new Intl.NumberFormat(locale, { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(thisMonthTotal),
+      description: t("collection.contributionsReceived"),
     },
     {
-      label: "Contributors",
-      value: data?.totalContributors.toString() ?? "0",
-      description: "Members with contributions",
+      label: t("collection.contributor"),
+      value: (data?.totalContributors ?? 0).toLocaleString(locale),
+      description: t("collection.membersContributions"),
     },
     {
-      label: "No Contribution",
-      value: noContribution.toString(),
-      description: "No active contribution this FY",
+      label: t("collection.nonContributors"),
+      value: noContribution.toLocaleString(locale),
+      description: t("collection.noContributionFy"),
     },
   ];
 
@@ -72,10 +67,10 @@ export default function CollectionSummaryCards() {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-4">
         <p className="text-sm font-medium text-red-700">
-          Unable to load collection summary.
+          {t("collection.unableSummary")}
         </p>
         <p className="mt-1 text-sm text-red-600">
-          {error instanceof Error ? error.message : "Please try again."}
+          {error instanceof Error ? error.message : t("collection.pleaseTryAgain")}
         </p>
       </div>
     );

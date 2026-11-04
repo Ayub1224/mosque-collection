@@ -9,12 +9,14 @@ import { toast } from "sonner";
 
 import { useMember } from "@/hooks/members/use-member";
 import { useUpdateMember } from "@/hooks/members/use-update-member";
+import { useLanguage } from "@/app/dashboard/components/admin-profile-context";
 import {
   memberSchema,
   type MemberFormValues,
 } from "@/lib/validations/member.schema";
 
 export default function EditMemberPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const params = useParams<{ memberId: string }>();
   const memberId = params.memberId;
@@ -95,7 +97,7 @@ export default function EditMemberPage() {
   if (isLoading) {
     return (
       <div className="rounded-xl border border-[#E2E8F0] bg-white p-8 text-center text-sm text-[#64748B]">
-        Loading member details...
+          {t("members.loadingDetails")}
       </div>
     );
   }
@@ -104,14 +106,14 @@ export default function EditMemberPage() {
     return (
       <div className="rounded-xl border border-[#E2E8F0] bg-white p-8 text-center">
         <p className="text-sm text-red-600">
-          {error instanceof Error ? error.message : "Member not found."}
+          {error instanceof Error ? error.message : t("members.notFound")}
         </p>
 
         <Link
           href="/dashboard/members"
           className="mt-4 inline-block text-sm font-medium text-[#17365D] hover:underline"
         >
-          Back to Members
+          {t("members.back")}
         </Link>
       </div>
     );
@@ -122,10 +124,10 @@ export default function EditMemberPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-[#64748B]">
         <Link href="/dashboard/members" className="hover:text-[#102744]">
-          Members
+          {t("common.members")}
         </Link>
         <span>/</span>
-        <span className="font-medium text-[#172B4D]">Edit Member</span>
+        <span className="font-medium text-[#172B4D]">{t("members.edit")}</span>
       </div>
 
       {/* Heading */}
@@ -140,10 +142,10 @@ export default function EditMemberPage() {
 
         <div>
           <h1 className="text-2xl font-semibold text-[#102744]">
-            Edit Member
+            {t("members.edit")}
           </h1>
           <p className="mt-1 text-sm text-[#64748B]">
-            Update member information.
+            {t("members.updateDescription")}
           </p>
         </div>
       </div>
@@ -156,7 +158,7 @@ export default function EditMemberPage() {
       >
         <div className="mb-6 flex items-center justify-between border-b border-[#E2E8F0] pb-4">
           <h2 className="text-sm font-semibold text-[#102744]">
-            Member Information
+            {t("members.information")}
           </h2>
 
           <span
@@ -178,13 +180,13 @@ export default function EditMemberPage() {
                 htmlFor="fullName"
                 className="mb-2 block text-xs font-medium text-[#172B4D]"
               >
-                Full Name <span className="text-red-500">*</span>
+                {t("members.fullName")} <span className="text-red-500">*</span>
               </label>
 
               <input
                 id="fullName"
                 type="text"
-                placeholder="Enter member's full name"
+                placeholder={t("members.enterName")}
                 autoComplete="name"
                 aria-invalid={!!errors.fullName}
                 className={inputClass}
@@ -201,7 +203,7 @@ export default function EditMemberPage() {
                 htmlFor="phoneNumber"
                 className="mb-2 block text-xs font-medium text-[#172B4D]"
               >
-                Phone Number <span className="text-red-500">*</span>
+                {t("members.phone")} <span className="text-red-500">*</span>
               </label>
 
               <div className="flex h-10 overflow-hidden rounded-lg border border-[#E2E8F0] focus-within:border-[#17365D] focus-within:ring-2 focus-within:ring-[#17365D]/10">
@@ -213,7 +215,7 @@ export default function EditMemberPage() {
                   id="phoneNumber"
                   type="tel"
                   inputMode="numeric"
-                  placeholder="Enter phone number"
+                  placeholder={t("members.enterPhone")}
                   autoComplete="tel-national"
                   aria-invalid={!!errors.phoneNumber}
                   className="min-w-0 flex-1 px-3 text-sm text-[#172B4D] outline-none placeholder:text-[#94A3B8]"
@@ -222,7 +224,7 @@ export default function EditMemberPage() {
               </div>
 
               <p className="mt-1.5 text-[11px] text-[#64748B]">
-                Each phone number can be registered only once.
+                {t("members.phoneUnique")}
               </p>
 
               {errors.phoneNumber && (
@@ -237,7 +239,7 @@ export default function EditMemberPage() {
               htmlFor="joiningDate"
               className="mb-2 block text-xs font-medium text-[#172B4D]"
             >
-              Joining Date <span className="text-red-500">*</span>
+              {t("members.joiningDate")} <span className="text-red-500">*</span>
             </label>
 
             <input
@@ -260,14 +262,13 @@ export default function EditMemberPage() {
               htmlFor="address"
               className="mb-2 block text-xs font-medium text-[#172B4D]"
             >
-              Address{" "}
-              <span className="font-normal text-[#64748B]">(Optional)</span>
+              {t("members.address")} <span className="font-normal text-[#64748B]">{t("members.optional")}</span>
             </label>
 
             <textarea
               id="address"
               rows={2}
-              placeholder="Enter residential address"
+              placeholder={t("members.enterAddress")}
               autoComplete="street-address"
               aria-invalid={!!errors.address}
               className={textareaClass}
@@ -286,7 +287,7 @@ export default function EditMemberPage() {
             href="/dashboard/members"
             className="inline-flex h-10 items-center justify-center rounded-lg border border-[#E2E8F0] bg-white px-5 text-sm font-medium text-[#17365D] hover:bg-[#F5F7FA]"
           >
-            Cancel
+            {t("members.cancel")}
           </Link>
 
           <button
@@ -294,7 +295,7 @@ export default function EditMemberPage() {
             disabled={updateMemberMutation.isPending}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-5 text-sm font-medium text-white transition hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {updateMemberMutation.isPending ? "Saving..." : "Save Changes"}
+            {updateMemberMutation.isPending ? t("members.saving") : t("members.saveChanges")}
           </button>
         </div>
       </form>

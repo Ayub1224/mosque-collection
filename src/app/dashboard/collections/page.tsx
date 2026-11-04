@@ -13,8 +13,10 @@ import { Plus } from "lucide-react";
 import AddCollectionDialog from "../components/add-collection-dialog";
 import type { Member } from "@/types/member";
 import AddCollectionForm from "../components/add-collection-form";
+import { useLanguage } from "../components/admin-profile-context";
 
 export default function CollectionsPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -39,9 +41,9 @@ export default function CollectionsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-[#102744]">Collections</h1>
+          <h1 className="text-2xl font-semibold text-[#102744]">{t("common.collection")}</h1>
           <p className="mt-1 text-sm text-[#64748B]">
-            Track and manage regular monthly donations.
+            {t("collection.trackDescription")}
           </p>
         </div>
 
@@ -51,7 +53,7 @@ export default function CollectionsPage() {
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#102744] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#17365D]"
         >
           <Plus size={18} />
-          Add Collection
+          {t("collection.add")}
         </button>
       </div>
 

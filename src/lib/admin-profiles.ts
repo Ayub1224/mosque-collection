@@ -13,6 +13,7 @@ type SaveAdminProfileInput = {
   email: string;
   name: string;
   designation: string;
+  language?: "en" | "hi";
 };
 
 function normalizeEmail(email: string): string {
@@ -24,7 +25,7 @@ function mapRowToProfile(row: string[]): AdminProfile {
     email: String(row[0] ?? ""),
     name: String(row[1] ?? ""),
     designation: String(row[2] ?? ""),
-    language: "en",
+    language: row[3] === "hi" ? "hi" : "en",
     theme: "blue",
     profileCompleted: String(row[5] ?? "").toLowerCase() === "true",
     createdAt: String(row[6] ?? ""),
@@ -61,6 +62,7 @@ export async function saveAdminProfile({
   email,
   name,
   designation,
+  language,
 }: SaveAdminProfileInput): Promise<AdminProfile> {
   const sheets = getGoogleSheetsClient();
   const spreadsheetId = getSpreadsheetId();
@@ -89,7 +91,7 @@ export async function saveAdminProfile({
     email: normalizedEmail,
     name: name.trim(),
     designation: designation.trim(),
-    language: "en",
+    language: language ?? (existingRow?.[3] === "hi" ? "hi" : "en"),
     theme: "blue",
     profileCompleted: true,
     createdAt: String(existingRow?.[6] ?? now),
