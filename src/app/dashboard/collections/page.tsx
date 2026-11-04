@@ -20,6 +20,7 @@ export default function CollectionsPage() {
 
   const memberIdFromUrl = searchParams.get("memberId");
   const periodFromUrl = searchParams.get("period");
+  const shouldOpenAddCollection = searchParams.get("action") === "add";
 
   const collectionPeriod = periodFromUrl === "month" ? "month" : "year";
   const [search, setSearch] = useState("");
@@ -29,10 +30,10 @@ export default function CollectionsPage() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   useEffect(() => {
-    if (memberIdFromUrl) {
+    if (memberIdFromUrl || shouldOpenAddCollection) {
       setIsAddCollectionOpen(true);
     }
-  }, [memberIdFromUrl]);
+  }, [memberIdFromUrl, shouldOpenAddCollection]);
 
   return (
     <div className="space-y-6">

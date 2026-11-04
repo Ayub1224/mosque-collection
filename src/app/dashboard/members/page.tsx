@@ -291,6 +291,7 @@ export default function MembersPage() {
           </table>
         </div>
 
+    
         {/* Mobile cards */}
         <div className="divide-y divide-[#E2E8F0] md:hidden">
           {isLoading ? (
@@ -307,25 +308,42 @@ export default function MembersPage() {
             </p>
           ) : (
             filteredMembers.map((member) => (
-              <div key={member.memberId} className="space-y-2 p-5">
-                <div className="flex items-center justify-between">
-                  <Link
-                    href={`/dashboard/members/${encodeURIComponent(member.memberId)}`}
-                    className="font-semibold text-[#172B4D] hover:text-[#17365D] hover:underline"
-                  >
-                    {member.fullName}
-                  </Link>
-                  <span className="text-xs text-[#64748B]">
-                    {member.status}
-                  </span>
+              <div
+                key={member.memberId}
+                className="relative isolate space-y-2 p-5"
+              >
+                {/* Full card navigation */}
+                <Link
+                  href={`/dashboard/members/${encodeURIComponent(member.memberId)}`}
+                  aria-label={`View details for ${member.fullName}`}
+                  className="absolute inset-0 z-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#17365D]"
+                />
+
+                {/* Member information */}
+                <div className="pointer-events-none relative z-0">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-[#172B4D]">
+                      {member.fullName}
+                    </p>
+
+                    <span className="text-xs text-[#64748B]">
+                      {member.status}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-[#64748B]">{member.phoneNumber}</p>
+
+                  <p className="text-sm text-[#64748B]">
+                    {member.address || "No address"}
+                  </p>
+
+                  <p className="text-xs text-[#94A3B8]">
+                    ID: {member.memberId}
+                  </p>
                 </div>
 
-                <p className="text-sm text-[#64748B]">{member.phoneNumber}</p>
-                <p className="text-sm text-[#64748B]">
-                  {member.address || "No address"}
-                </p>
-                <p className="text-xs text-[#94A3B8]">ID: {member.memberId}</p>
-                <div className="flex items-center justify-end gap-4 pt-2">
+                {/* Independent actions */}
+                <div className="relative z-10 flex items-center justify-end gap-4 pt-2">
                   <Link
                     href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`}
                     className="text-sm font-medium text-[#17365D] hover:underline"
