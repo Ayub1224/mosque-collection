@@ -82,12 +82,14 @@ interface MonthlyCollectionOverviewProps {
   search?: string;
   memberStatus?: MemberStatusFilter;
   contribution?: ContributionFilter;
+  period?: "month" | "year";
 }
 
 export default function MonthlyCollectionOverview({
   search = "",
   memberStatus = "All",
   contribution = "All",
+  period = "year",
 }: MonthlyCollectionOverviewProps) {
   const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<SelectedMonth | null>(
@@ -114,6 +116,10 @@ export default function MonthlyCollectionOverview({
   const currentMonth = today.getMonth();
 
   const financialYearStart = currentMonth >= 3 ? currentYear : currentYear - 1;
+  const visibleMonths =
+    period === "month"
+      ? MONTHS.filter((item) => item.month === currentMonth + 1)
+      : MONTHS;
 
   const {
     data: overview,
@@ -165,7 +171,7 @@ export default function MonthlyCollectionOverview({
         ),
       },
 
-      ...MONTHS.map(
+      ...visibleMonths.map(
         ({ month, label }): LegacyColumnDef<CollectionOverviewRow> => ({
           id: `month-${month}`,
           header: label,
@@ -236,15 +242,24 @@ export default function MonthlyCollectionOverview({
 
       {
         id: "annualTotal",
-        header: "Annual Total",
-        cell: ({ row }) => (
-          <span className="font-semibold text-[#102744]">
-            {formatCurrency(row.original.annualTotal)}
-          </span>
-        ),
+        header: period === "month" ? "Month Total" : "Annual Total",
+        cell: ({ row }) => {
+          const total =
+            period === "month"
+              ? (row.original.months.find(
+                  (item) => item.month === currentMonth + 1,
+                )?.total ?? 0)
+              : row.original.annualTotal;
+
+          return (
+            <span className="font-semibold text-[#102744]">
+              {formatCurrency(total)}
+            </span>
+          );
+        },
       },
     ],
-    [financialYearStart],
+    [financialYearStart, visibleMonths, period, currentMonth],
   );
 
   const table = useLegacyTable({
@@ -451,7 +466,7 @@ export default function MonthlyCollectionOverview({
                       </p>
 
                       <div className="grid grid-cols-3 gap-2">
-                        {MONTHS.map(({ month, label }) => {
+                  {visibleMonths.map(({ month, label }) => {
                           const monthData = row.months.find(
                             (item) => item.month === month,
                           );
@@ -508,7 +523,10 @@ export default function MonthlyCollectionOverview({
                                     aria-label={`WhatsApp reminder for ${row.member.fullName}, ${label}`}
                                     className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#16834A] hover:bg-[#EAF7EF]"
                                   >
-                                    <SiWhatsapp size={17} className="text-[#25D366]" />
+                                    <SiWhatsapp
+                                      size={17}
+                                      className="text-[#25D366]"
+                                    />
                                   </button>
                                 )}
                               </div>

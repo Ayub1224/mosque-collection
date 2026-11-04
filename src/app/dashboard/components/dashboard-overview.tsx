@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import SummaryCard from "./summary-card";
 import { useMembers } from "@/hooks/members/use-members";
@@ -27,9 +28,11 @@ export default function DashboardOverview() {
     const collections = collectionsQuery.data ?? [];
 
     const today = new Date();
-    const currentMonth = today.getMonth();
+    const currentMonth = today.getMonth() + 1;
     const currentYear = today.getFullYear();
 
+    const financialYearStart =
+      currentMonth >= 4 ? currentYear : currentYear - 1;
     const activeCollections = collections.filter(
       (collection) => collection.recordStatus === "Active",
     );
@@ -38,14 +41,18 @@ export default function DashboardOverview() {
       .filter((collection) => {
         const [year, month] = collection.donationDate.split("-").map(Number);
 
-        return year === currentYear && month === currentMonth + 1;
+     return year === currentYear && month === currentMonth;
       })
       .reduce((total, collection) => total + collection.amount, 0);
 
     const collectionsThisYear = activeCollections
       .filter((collection) => {
-        const [year] = collection.donationDate.split("-").map(Number);
-        return year === currentYear;
+        const [year, month] = collection.donationDate.split("-").map(Number);
+
+        return (
+          (year === financialYearStart && month >= 4) ||
+          (year === financialYearStart + 1 && month <= 3)
+        );
       })
       .reduce((total, collection) => total + collection.amount, 0);
 
@@ -54,6 +61,7 @@ export default function DashboardOverview() {
         title: "Total Members",
         value: members.length.toLocaleString("en-IN"),
         description: "Registered members",
+        href: "/dashboard/members",
       },
       {
         title: "Active Members",
@@ -61,16 +69,19 @@ export default function DashboardOverview() {
           .filter((member) => member.status === "Active")
           .length.toLocaleString("en-IN"),
         description: "Currently active members",
+        href: "/dashboard/members?status=Active",
       },
       {
         title: "Collections This Month",
         value: formatCurrency(collectionsThisMonth),
         description: "Current month's collections",
+        href: "/dashboard/collections?period=month",
       },
       {
         title: "Collections This Year",
         value: formatCurrency(collectionsThisYear),
-        description: "Current calendar year's collections",
+        description: "Current financial year's collections",
+        href: "/dashboard/collections?period=year",
       },
     ];
   }, [membersQuery.data, collectionsQuery.data]);
@@ -120,6 +131,7 @@ export default function DashboardOverview() {
               title={card.title}
               value={isLoading ? "Loading..." : isError ? "—" : card.value}
               description={card.description}
+              href={card.href}
             />
           ))}
         </div>

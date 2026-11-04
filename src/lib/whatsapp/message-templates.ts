@@ -3,6 +3,7 @@ export interface MonthlyReminderInput {
   memberName: string;
   month: string;
   year: number;
+  adminName: string;
 }
 
 export const MONTHLY_CONTRIBUTION_TEMPLATE = `Assalamu Alaikum {{memberName}},
@@ -17,15 +18,17 @@ Aap chanda jama karne ke liye attached QR code scan kar sakte hain.
 
 JazakAllahu Khairan. Allah aapke maal aur rizq mein barkat ata farmaye.
 
-— Mosque Administration`;
+{{adminName}}`;
 
 export function buildMonthlyContributionMessage({
   memberName,
   month,
   year,
+  adminName,
 }: MonthlyReminderInput): string {
   return MONTHLY_CONTRIBUTION_TEMPLATE
     .replaceAll("{{memberName}}", memberName)
     .replaceAll("{{month}}", month)
-    .replaceAll("{{year}}", String(year));
+    .replaceAll("{{year}}", String(year))
+    .replaceAll("{{adminName}}", adminName);
 }

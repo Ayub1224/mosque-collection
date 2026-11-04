@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SignOutButton from "@/components/sign-out-button";
 import { AdminProfileProvider } from "./admin-profile-context";
+import { LiaMosqueSolid } from "react-icons/lia";
 
 type DashboardShellProps = {
   children: React.ReactNode;
@@ -27,6 +28,25 @@ export default function DashboardShell({
 }: DashboardShellProps) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(event.target as Node)
+      ) {
+        setAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const navLinks = (
     <nav className="flex flex-col gap-1 px-3 py-4" aria-label="Main navigation">
@@ -74,11 +94,11 @@ export default function DashboardShell({
       >
         <div className="flex h-20 items-center gap-3 border-b border-[#E2E8F0] px-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#102744] text-white">
-            <MosqueIcon />
+            <LiaMosqueSolid size={25} />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-[#102744]">
-              Mosque Collection
+            <p className="truncate text-sm items-center font-semibold text-[#102744]">
+              Gausul Wara Masjid
             </p>
             <p className="mt-0.5 text-xs text-[#64748B]">Administration</p>
           </div>
@@ -129,20 +149,76 @@ export default function DashboardShell({
             >
               <MenuIcon />
             </button>
-            <div>
-              <p className="text-sm font-semibold text-[#102744]">
-                Mosque Collection
+            <Link
+              href="/dashboard"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Go to dashboard"
+              className="group rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] focus-visible:ring-offset-2"
+            >
+              <p className="text-sm font-semibold text-[#102744] flex items-center gap-2 transition-colors group-hover:text-[#17365D]">
+                <LiaMosqueSolid size={25} />
+                Gausul Wara Masjid
               </p>
+
               <p className="hidden text-xs text-[#64748B] sm:block">
                 Management workspace
               </p>
-            </div>
+            </Link>
           </div>
-          <div className="flex items-center gap-2 text-xs text-[#64748B]">
-            <span className="hidden sm:inline">Welcome,</span>
-            <span className="max-w-40 truncate font-semibold text-[#172B4D]">
-              {adminName}
-            </span>
+
+          <div className="relative" ref={accountMenuRef}>
+            <button
+              type="button"
+              onClick={() => setAccountMenuOpen((open) => !open)}
+              aria-expanded={accountMenuOpen}
+              aria-haspopup="menu"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-[#64748B] transition-colors hover:bg-[#F5F7FA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17365D]"
+            >
+              <span className="hidden sm:inline">Welcome,</span>
+
+              <span className="max-w-40 truncate font-semibold text-[#172B4D]">
+                {adminName}
+              </span>
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className={`h-4 w-4 transition-transform ${
+                  accountMenuOpen ? "rotate-180" : ""
+                }`}
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+
+            {accountMenuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-[#E2E8F0] bg-white p-2 shadow-lg"
+              >
+                <div className="border-b border-[#E2E8F0] px-3 py-2">
+                  <p className="text-xs font-semibold text-[#172B4D]">
+                    {adminName}
+                  </p>
+                  <p className="mt-1 text-[11px] text-[#64748B]">
+                    Administrator
+                  </p>
+                </div>
+
+                <div className="pt-2">
+                  <div
+                    role="menuitem"
+                    className="rounded-lg"
+                    onClick={() => setAccountMenuOpen(false)}
+                  >
+                    <SignOutButton />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 

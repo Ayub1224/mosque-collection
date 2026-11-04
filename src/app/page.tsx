@@ -1,8 +1,26 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import { useState } from "react";
 
 export default function Home() {
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    if (isSigningIn) return;
+
+    setIsSigningIn(true);
+
+    try {
+      await signIn("google", {
+        redirectTo: "/dashboard",
+      });
+    } catch (error) {
+      console.error("Google sign-in failed:", error);
+      setIsSigningIn(false);
+    }
+  };
+
   return (
     <main className="flex min-h-screen flex-col bg-white md:flex-row">
       {/* Branding: image header on mobile, full panel on desktop */}
@@ -75,16 +93,44 @@ export default function Home() {
 
           <button
             type="button"
-            onClick={() =>
-              signIn("google", {
-                redirectTo: "/dashboard",
-              })
-            }
+            onClick={handleGoogleSignIn}
+            disabled={isSigningIn}
             aria-describedby="access-notice"
-            className="mt-6 flex min-h-12 w-full items-center justify-center gap-3 rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-sm font-medium text-[#172B4D] shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17365D] md:mt-8"
+            aria-live="polite"
+            className="mt-6 flex min-h-12 w-full items-center justify-center gap-3 rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-sm font-medium text-[#172B4D] shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17365D] disabled:cursor-not-allowed disabled:opacity-70 md:mt-8"
           >
-            <GoogleIcon />
-            <span>Continue with Google</span>
+            {isSigningIn ? (
+              <>
+                <svg
+                  className="h-5 w-5 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    className="opacity-25"
+                  />
+                  <path
+                    d="M21 12a9 9 0 0 0-9-9"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                </svg>
+
+                <span>Connecting to Google...</span>
+              </>
+            ) : (
+              <>
+                <GoogleIcon />
+                <span>Continue with Google</span>
+              </>
+            )}
           </button>
 
           <p
