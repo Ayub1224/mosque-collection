@@ -1,4 +1,3 @@
-
 "use client";
 
 import { signOut } from "next-auth/react";
@@ -8,7 +7,7 @@ export default function SignOutButton() {
     <button
       type="button"
       onClick={() => signOut({ redirectTo: "/" })}
-      className="rounded-lg bg-[#102744] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#17365D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17365D]"
+      className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
     >
       Sign out
     </button>
