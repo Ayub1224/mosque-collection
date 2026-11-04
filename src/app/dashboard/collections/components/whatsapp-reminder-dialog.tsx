@@ -14,6 +14,7 @@ import {
 
 import type { Member } from "@/types/member";
 import { buildMonthlyContributionMessage } from "@/lib/whatsapp/message-templates";
+import { useAdminName } from "../../components/admin-profile-context";
 
 interface WhatsAppReminderDialogProps {
   open: boolean;
@@ -53,6 +54,7 @@ export default function WhatsAppReminderDialog({
   const [qrLoading, setQrLoading] = useState(false);
   const [qrError, setQrError] = useState("");
 
+  const adminName = useAdminName();
   const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
   const [copied, setCopied] = useState(false);
 
@@ -62,6 +64,7 @@ export default function WhatsAppReminderDialog({
     memberName: member.fullName,
     month: monthName,
     year,
+    adminName,
   });
 
   // Load the QR image as a File before the user clicks Share.
