@@ -41,7 +41,7 @@ export default function DashboardOverview() {
       .filter((collection) => {
         const [year, month] = collection.donationDate.split("-").map(Number);
 
-     return year === currentYear && month === currentMonth;
+        return year === currentYear && month === currentMonth;
       })
       .reduce((total, collection) => total + collection.amount, 0);
 
@@ -115,7 +115,7 @@ export default function DashboardOverview() {
           </Link>
 
           <Link
-            href="/dashboard/collections"
+            href="/dashboard/collections?action=add"
             className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-4 text-sm font-medium text-white shadow-sm transition hover:bg-[#17365D]"
           >
             + Add Collection
