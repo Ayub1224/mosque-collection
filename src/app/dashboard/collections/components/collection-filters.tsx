@@ -2,6 +2,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
+import { useLanguage } from "../../components/admin-profile-context";
 
 export type MemberStatusFilter = "All" | "Active" | "Inactive";
 export type ContributionFilter = "All" | "Contributors" | "No Contribution";
@@ -23,6 +24,7 @@ export default function CollectionFilters({
   contribution,
   onContributionChange,
 }: CollectionFiltersProps) {
+  const { t } = useLanguage();
   const hasActiveFilters =
     search !== "" ||
     memberStatus !== "All" ||
@@ -40,10 +42,10 @@ export default function CollectionFilters({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-semibold text-[#102744]">
-              Collection Records
+              {t("collection.records")}
             </h2>
             <p className="mt-1 text-xs text-[#64748B]">
-              Search and filter members by their contribution activity.
+              {t("collection.searchFilterDescription")}
             </p>
           </div>
 
@@ -54,7 +56,7 @@ export default function CollectionFilters({
               className="hidden items-center gap-1 text-sm font-medium text-[#17365D] hover:underline sm:inline-flex"
             >
               <X className="h-4 w-4" />
-              Clear filters
+              {t("collection.clearFilters")}
             </button>
           )}
         </div>
@@ -68,8 +70,8 @@ export default function CollectionFilters({
               type="search"
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Search member name or phone number..."
-              aria-label="Search members"
+              placeholder={t("collection.searchMembers")}
+              aria-label={t("members.title")}
               className="h-10 w-full rounded-lg border border-[#E2E8F0] bg-white pl-9 pr-3 text-sm text-[#172B4D] outline-none placeholder:text-[#94A3B8] focus:border-[#17365D] focus:ring-2 focus:ring-[#17365D]/10"
             />
           </div>
@@ -79,12 +81,12 @@ export default function CollectionFilters({
             onChange={(event) =>
               onMemberStatusChange(event.target.value as MemberStatusFilter)
             }
-            aria-label="Filter by member status"
+            aria-label={t("collection.filterStatus")}
             className="h-10 w-40 rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none focus:border-[#17365D]"
           >
-            <option value="All">All Members</option>
-            <option value="Active">Active Members</option>
-            <option value="Inactive">Inactive Members</option>
+            <option value="All">{t("collection.allMembers")}</option>
+            <option value="Active">{t("collection.activeMembers")}</option>
+            <option value="Inactive">{t("collection.inactiveMembers")}</option>
           </select>
 
           <select
@@ -92,12 +94,12 @@ export default function CollectionFilters({
             onChange={(event) =>
               onContributionChange(event.target.value as ContributionFilter)
             }
-            aria-label="Filter by contribution activity"
+            aria-label={t("collection.filterContribution")}
             className="h-10 w-44 rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none focus:border-[#17365D]"
           >
-            <option value="All">All Contributions</option>
-            <option value="Contributors">Contributors</option>
-            <option value="No Contribution">No Contribution</option>
+            <option value="All">{t("collection.allContributions")}</option>
+            <option value="Contributors">{t("collection.contributor")}</option>
+            <option value="No Contribution">{t("collection.noContribution")}</option>
           </select>
         </div>
 
@@ -110,8 +112,8 @@ export default function CollectionFilters({
               type="search"
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Search name or phone..."
-              aria-label="Search members"
+              placeholder={t("collection.searchNamePhone")}
+              aria-label={t("members.title")}
               className="h-11 w-full rounded-lg border border-[#E2E8F0] bg-white pl-9 pr-3 text-sm text-[#172B4D] outline-none placeholder:text-[#94A3B8] focus:border-[#17365D] focus:ring-2 focus:ring-[#17365D]/10"
             />
           </div>
@@ -119,7 +121,7 @@ export default function CollectionFilters({
           <div className="grid grid-cols-2 gap-3">
             <div className="min-w-0">
               <label className="mb-1.5 block text-xs font-medium text-[#64748B]">
-                Member Status
+                {t("collection.filterStatus")}
               </label>
               <select
                 value={memberStatus}
@@ -128,15 +130,15 @@ export default function CollectionFilters({
                 }
                 className="h-10 w-full rounded-lg border border-[#E2E8F0] bg-white px-2 text-sm text-[#172B4D] outline-none focus:border-[#17365D]"
               >
-                <option value="All">All</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="All">{t("collection.all")}</option>
+                <option value="Active">{t("members.active")}</option>
+                <option value="Inactive">{t("members.inactive")}</option>
               </select>
             </div>
 
             <div className="min-w-0">
               <label className="mb-1.5 block text-xs font-medium text-[#64748B]">
-                Contribution
+                {t("collection.filterContribution")}
               </label>
               <select
                 value={contribution}
@@ -145,9 +147,9 @@ export default function CollectionFilters({
                 }
                 className="h-10 w-full rounded-lg border border-[#E2E8F0] bg-white px-2 text-sm text-[#172B4D] outline-none focus:border-[#17365D]"
               >
-                <option value="All">All</option>
-                <option value="Contributors">Contributors</option>
-                <option value="No Contribution">No Contribution</option>
+                <option value="All">{t("collection.all")}</option>
+                <option value="Contributors">{t("collection.contributor")}</option>
+                <option value="No Contribution">{t("collection.noContribution")}</option>
               </select>
             </div>
           </div>
@@ -159,7 +161,7 @@ export default function CollectionFilters({
               className="inline-flex items-center gap-1 text-sm font-medium text-[#17365D]"
             >
               <X className="h-4 w-4" />
-              Clear filters
+              {t("collection.clearFilters")}
             </button>
           )}
         </div>

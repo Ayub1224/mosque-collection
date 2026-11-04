@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { flexRender } from "@tanstack/react-table";
 import type { Collection } from "@/types/collection";
 import {
@@ -20,6 +20,7 @@ import type {
   MemberStatusFilter,
   ContributionFilter,
 } from "../collections/components/collection-filters";
+import { useLanguage } from "./admin-profile-context";
 
 const MONTHS = [
   { month: 4, label: "Apr" },
@@ -64,13 +65,6 @@ function isCurrentOrPreviousMonth(month: number, year: number): boolean {
   );
 }
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-
 interface SelectedMonth {
   memberName: string;
   memberId: string;
@@ -91,6 +85,8 @@ export default function MonthlyCollectionOverview({
   contribution = "All",
   period = "year",
 }: MonthlyCollectionOverviewProps) {
+  const { language, t } = useLanguage();
+  const formatLocalizedCurrency = useCallback((amount: number) => new Intl.NumberFormat(language === "hi" ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount), [language]);
   const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<SelectedMonth | null>(
     null,
@@ -116,10 +112,12 @@ export default function MonthlyCollectionOverview({
   const currentMonth = today.getMonth();
 
   const financialYearStart = currentMonth >= 3 ? currentYear : currentYear - 1;
+  const locale = language === "hi" ? "hi-IN" : "en-IN";
+  const localizedMonths = MONTHS.map(({ month }) => ({ month, label: new Intl.DateTimeFormat(locale, { month: "short" }).format(new Date(2024, month - 1, 1)) }));
   const visibleMonths =
     period === "month"
-      ? MONTHS.filter((item) => item.month === currentMonth + 1)
-      : MONTHS;
+      ? localizedMonths.filter((item) => item.month === currentMonth + 1)
+      : localizedMonths;
 
   const {
     data: overview,
@@ -158,7 +156,7 @@ export default function MonthlyCollectionOverview({
     () => [
       {
         id: "member",
-        header: "Member",
+        header: t("collection.member"),
         cell: ({ row }) => (
           <div className="min-w-40">
             <p className="font-medium text-[#172B4D]">
@@ -213,7 +211,7 @@ export default function MonthlyCollectionOverview({
                   }`}
                   aria-label={`View ${label} donations for ${member.fullName}`}
                 >
-                  {monthData?.total ? formatCurrency(monthData.total) : "—"}
+                {monthData?.total ? formatLocalizedCurrency(monthData.total) : "—"}
                 </button>
 
                 {/* WhatsApp reminder action */}
@@ -242,7 +240,7 @@ export default function MonthlyCollectionOverview({
 
       {
         id: "annualTotal",
-        header: period === "month" ? "Month Total" : "Annual Total",
+        header: period === "month" ? t("collection.monthTotal") : t("collection.annualTotal"),
         cell: ({ row }) => {
           const total =
             period === "month"
@@ -253,13 +251,13 @@ export default function MonthlyCollectionOverview({
 
           return (
             <span className="font-semibold text-[#102744]">
-              {formatCurrency(total)}
+              {formatLocalizedCurrency(total)}
             </span>
           );
         },
       },
     ],
-    [financialYearStart, visibleMonths, period, currentMonth],
+    [financialYearStart, visibleMonths, period, currentMonth, language, t, formatLocalizedCurrency],
   );
 
   const table = useLegacyTable({
@@ -272,17 +270,17 @@ export default function MonthlyCollectionOverview({
     <section className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
       {/* Section heading */}
       <h2 className="text-base font-semibold text-[#102744]">
-        Monthly Collection Ledger
+        {t("dashboard.ledger")}
       </h2>
 
       <p className="mt-1 text-xs text-[#64748B]">
-        Showing {filteredRows.length} of {overview?.totalMembers ?? 0} members
+        {t("dashboard.showingMembers").replace("{shown}", filteredRows.length.toLocaleString(locale)).replace("{total}", (overview?.totalMembers ?? 0).toLocaleString(locale))}
       </p>
 
       {/* Loading state */}
       {isLoading && (
         <p className="py-12 text-center text-sm text-[#64748B]">
-          Loading collection data...
+          {t("dashboard.loadingData")}
         </p>
       )}
 
@@ -291,16 +289,16 @@ export default function MonthlyCollectionOverview({
         <p className="py-12 text-center text-sm text-red-600">
           {error instanceof Error
             ? error.message
-            : "Unable to load collection data."}
+            : t("dashboard.loadDataError")}
         </p>
       )}
 
       {/* Empty state */}
       {!isLoading && !isError && filteredRows.length === 0 && (
         <div className="py-12 text-center">
-          <p className="text-sm font-medium text-[#172B4D]">No members found</p>
+          <p className="text-sm font-medium text-[#172B4D]">{t("members.noResults")}</p>
           <p className="mt-1 text-xs text-[#64748B]">
-            Try changing your search or filters.
+            {t("dashboard.changeSearch")}
           </p>
         </div>
       )}
@@ -415,18 +413,18 @@ export default function MonthlyCollectionOverview({
                         }`}
                       >
                         {row.annualTotal > 0
-                          ? "Contributor"
-                          : "No Contribution"}
+                          ? t("collection.contributor")
+                          : t("collection.noContribution")}
                       </span>
                     </div>
 
                     {/* Annual total and expand button */}
                     <div className="mt-4 flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-[#64748B]">Annual Total</p>
+                        <p className="text-xs text-[#64748B]">{t("collection.annualTotal")}</p>
 
                         <p className="mt-1 text-lg font-semibold text-[#102744]">
-                          {formatCurrency(row.annualTotal)}
+                          {formatLocalizedCurrency(row.annualTotal)}
                         </p>
                       </div>
 
@@ -440,7 +438,7 @@ export default function MonthlyCollectionOverview({
                         aria-expanded={isExpanded}
                         className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium text-[#17365D] hover:bg-[#F5F7FA]"
                       >
-                        {isExpanded ? "Hide details" : "Monthly details"}
+                        {isExpanded ? t("dashboard.hideDetails") : t("dashboard.monthlyDetails")}
 
                         <svg
                           viewBox="0 0 24 24"
@@ -505,7 +503,7 @@ export default function MonthlyCollectionOverview({
 
                                   <p className="mt-1 text-sm font-semibold text-[#172B4D]">
                                     {monthData?.total
-                                      ? formatCurrency(monthData.total)
+                                      ? formatLocalizedCurrency(monthData.total)
                                       : "—"}
                                   </p>
                                 </button>
@@ -604,7 +602,7 @@ export default function MonthlyCollectionOverview({
                   Active collection total
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-[#102744]">
-                  {formatCurrency(
+                  {formatLocalizedCurrency(
                     selectedMonth.donations
                       .filter((donation) => donation.recordStatus === "Active")
                       .reduce((total, donation) => total + donation.amount, 0),
@@ -658,7 +656,7 @@ export default function MonthlyCollectionOverview({
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <p className="text-lg font-semibold text-[#102744]">
-                                {formatCurrency(donation.amount)}
+                                {formatLocalizedCurrency(donation.amount)}
                               </p>
                               <p className="mt-1 text-xs text-[#64748B]">
                                 {donation.donationDate}

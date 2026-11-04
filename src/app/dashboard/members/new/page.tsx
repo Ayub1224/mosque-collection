@@ -9,8 +9,10 @@ import {
   type MemberFormValues,
 } from "@/lib/validations/member.schema";
 import { useCreateMember } from "@/hooks/members/use-create-member";
+import { useLanguage } from "@/app/dashboard/components/admin-profile-context";
 
 export default function AddMemberPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [today, setToday] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
@@ -85,10 +87,10 @@ export default function AddMemberPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-[#64748B]">
         <Link href="/dashboard/members" className="hover:text-[#102744]">
-          Members
+          {t("common.members")}
         </Link>
         <span>/</span>
-        <span className="font-medium text-[#172B4D]">Add Member</span>
+        <span className="font-medium text-[#172B4D]">{t("members.add")}</span>
       </div>
 
       {/* Heading */}
@@ -103,10 +105,10 @@ export default function AddMemberPage() {
 
         <div>
           <h1 className="text-2xl font-semibold text-[#102744]">
-            Add New Member
+            {t("members.addNew")}
           </h1>
           <p className="mt-1 text-sm text-[#64748B]">
-            Register a new member in the mosque directory.
+            {t("members.registerDescription")}
           </p>
         </div>
       </div>
@@ -120,11 +122,11 @@ export default function AddMemberPage() {
         {/* Form heading */}
         <div className="mb-6 flex items-center justify-between border-b border-[#E2E8F0] pb-4">
           <h2 className="text-sm font-semibold text-[#102744]">
-            Member Information
+            {t("members.information")}
           </h2>
 
           <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
-            ● Active by default
+            {t("members.activeByDefault")}
           </span>
         </div>
 
@@ -136,13 +138,13 @@ export default function AddMemberPage() {
                 htmlFor="fullName"
                 className="mb-2 block text-xs font-medium text-[#172B4D]"
               >
-                Full Name <span className="text-red-500">*</span>
+                {t("members.fullName")} <span className="text-red-500">*</span>
               </label>
 
               <input
                 id="fullName"
                 type="text"
-                placeholder="Enter member's full name"
+                placeholder={t("members.enterName")}
                 autoComplete="name"
                 aria-invalid={!!errors.fullName}
                 className={inputClass}
@@ -159,7 +161,7 @@ export default function AddMemberPage() {
                 htmlFor="phoneNumber"
                 className="mb-2 block text-xs font-medium text-[#172B4D]"
               >
-                Phone Number <span className="text-red-500">*</span>
+                {t("members.phone")} <span className="text-red-500">*</span>
               </label>
 
               <div className="flex h-10 overflow-hidden rounded-lg border border-[#E2E8F0] focus-within:border-[#17365D] focus-within:ring-2 focus-within:ring-[#17365D]/10">
@@ -171,7 +173,7 @@ export default function AddMemberPage() {
                   id="phoneNumber"
                   type="tel"
                   inputMode="numeric"
-                  placeholder="Enter phone number"
+                  placeholder={t("members.enterPhone")}
                   autoComplete="tel-national"
                   aria-invalid={!!errors.phoneNumber}
                   className="min-w-0 flex-1 px-3 text-sm text-[#172B4D] outline-none placeholder:text-[#94A3B8]"
@@ -180,7 +182,7 @@ export default function AddMemberPage() {
               </div>
 
               <p className="mt-1.5 text-[11px] text-[#64748B]">
-                Each phone number can be registered only once.
+                {t("members.phoneUnique")}
               </p>
 
               {errors.phoneNumber && (
@@ -195,7 +197,7 @@ export default function AddMemberPage() {
               htmlFor="joiningDate"
               className="mb-2 block text-xs font-medium text-[#172B4D]"
             >
-              Joining Date <span className="text-red-500">*</span>
+              {t("members.joiningDate")} <span className="text-red-500">*</span>
             </label>
 
             <input
@@ -218,14 +220,13 @@ export default function AddMemberPage() {
               htmlFor="address"
               className="mb-2 block text-xs font-medium text-[#172B4D]"
             >
-              Address{" "}
-              <span className="font-normal text-[#64748B]">(Optional)</span>
+              {t("members.address")} <span className="font-normal text-[#64748B]">{t("members.optional")}</span>
             </label>
 
             <textarea
               id="address"
               rows={2}
-              placeholder="Enter residential address"
+              placeholder={t("members.enterAddress")}
               autoComplete="street-address"
               aria-invalid={!!errors.address}
               className={textareaClass}
@@ -254,7 +255,7 @@ export default function AddMemberPage() {
             href="/dashboard/members"
             className="inline-flex h-10 items-center justify-center rounded-lg border border-[#E2E8F0] bg-white px-5 text-sm font-medium text-[#17365D] hover:bg-[#F5F7FA]"
           >
-            Cancel
+            {t("members.cancel")}
           </Link>
 
           <button
@@ -262,7 +263,7 @@ export default function AddMemberPage() {
             disabled={createMemberMutation.isPending || !today}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-5 text-sm font-medium text-white transition hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {createMemberMutation.isPending ? "Saving..." : "Save Member"}
+            {createMemberMutation.isPending ? t("members.saving") : t("members.save")}
           </button>
         </div>
       </form>

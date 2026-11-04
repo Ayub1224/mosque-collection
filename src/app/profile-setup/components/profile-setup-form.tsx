@@ -25,7 +25,7 @@ export default function ProfileSetupForm({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<AdminProfileFormValues>({
+  } = useForm<AdminProfileFormValues, unknown, AdminProfileFormValues>({
     resolver: zodResolver(adminProfileSchema),
     defaultValues: initialValues,
   });
@@ -131,17 +131,10 @@ export default function ProfileSetupForm({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-[#172B4D]">
-              Language
-            </label>
-            <input
-              value="English"
-              disabled
-              className={`${inputClass} cursor-not-allowed bg-[#F5F7FA]`}
-            />
-            <p className="mt-1 text-[11px] text-[#94A3B8]">
-              Coming soon
-            </p>
+            <label htmlFor="language" className="text-sm font-medium text-[#172B4D]">Language</label>
+            <select id="language" {...register("language")} className={inputClass}>
+              <option value="en">English</option><option value="hi">हिन्दी</option>
+            </select>
           </div>
 
           <div>

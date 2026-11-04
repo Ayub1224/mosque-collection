@@ -42,6 +42,7 @@ async function ProfileSetupContent() {
         initialValues={{
           name: profile?.name ?? "",
           designation: profile?.designation ?? "",
+          language: profile?.language ?? "en",
         }}
       />
     </main>

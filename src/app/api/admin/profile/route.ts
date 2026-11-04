@@ -5,7 +5,7 @@ import {
   getAdminProfileByEmail,
   saveAdminProfile,
 } from "@/lib/admin-profiles";
-import { adminProfileSchema } from "@/lib/validations/admin-profile.schema";
+import { adminLanguageSchema, adminProfileSchema } from "@/lib/validations/admin-profile.schema";
 import { z } from "zod";
 
 async function getAuthorizedAdminEmail() {
@@ -78,6 +78,7 @@ export async function PUT(request: Request) {
       email,
       name: validation.data.name,
       designation: validation.data.designation,
+      language: validation.data.language,
     });
 
     return NextResponse.json({
@@ -95,5 +96,21 @@ export async function PUT(request: Request) {
       },
       { status: 500 },
     );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const email = await getAuthorizedAdminEmail();
+    if (!email) return NextResponse.json({ success: false, message: "Unauthorized access." }, { status: 401 });
+    const validation = adminLanguageSchema.safeParse(await request.json());
+    if (!validation.success) return NextResponse.json({ success: false, message: "Please select a supported language." }, { status: 400 });
+    const existing = await getAdminProfileByEmail(email);
+    if (!existing?.profileCompleted) return NextResponse.json({ success: false, message: "Complete your profile first." }, { status: 409 });
+    const profile = await saveAdminProfile({ email, name: existing.name, designation: existing.designation, language: validation.data.language });
+    return NextResponse.json({ success: true, profile });
+  } catch (error) {
+    console.error("Update admin language error:", error);
+    return NextResponse.json({ success: false, message: "Unable to update language." }, { status: 500 });
   }
 }

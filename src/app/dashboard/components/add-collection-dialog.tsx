@@ -6,6 +6,7 @@ import { Search, X, UserRound, Loader2, AlertCircle, Plus } from "lucide-react";
 import { useMembers } from "@/hooks/members/use-members";
 import type { Member } from "@/types/member";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "./admin-profile-context";
 
 interface AddCollectionDialogProps {
   open: boolean;
@@ -20,6 +21,7 @@ export default function AddCollectionDialog({
   onSelectMember,
   initialMemberId,
 }: AddCollectionDialogProps) {
+  const { t, language } = useLanguage();
   const [search, setSearch] = useState("");
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const router = useRouter();
@@ -105,18 +107,18 @@ export default function AddCollectionDialog({
               id="add-collection-title"
               className="text-lg font-semibold text-[#102744]"
             >
-              Add Collection
+              {t("collection.add")}
             </h2>
 
             <p className="mt-1 text-sm text-[#64748B]">
-              Search and select a member to record a donation.
+              {t("collection.selectMemberDescription")}
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            aria-label="Close dialog"
+            aria-label={t("collection.close")}
             className="rounded-lg p-2 text-[#64748B] transition hover:bg-[#F5F7FA] hover:text-[#102744]"
           >
             <X className="h-5 w-5" />
@@ -135,15 +137,15 @@ export default function AddCollectionDialog({
                 setSearch(event.target.value);
                 setSelectedMember(null);
               }}
-              placeholder="Search by member name or phone number..."
-              aria-label="Search members"
+              placeholder={t("collection.searchByMember")}
+              aria-label={t("members.title")}
               autoFocus
               className="h-11 w-full rounded-lg border border-[#E2E8F0] bg-white pl-10 pr-4 text-sm text-[#172B4D] outline-none transition placeholder:text-[#94A3B8] focus:border-[#17365D] focus:ring-2 focus:ring-[#17365D]/10"
             />
           </div>
 
           <p className="mt-2 text-xs text-[#94A3B8]">
-            {members.length} registered members
+            {members.length.toLocaleString(language === "hi" ? "hi-IN" : "en-IN")} {t("collection.registeredMembers")}
           </p>
         </div>
 
@@ -152,20 +154,20 @@ export default function AddCollectionDialog({
           {isLoading ? (
             <div className="flex min-h-[220px] flex-col items-center justify-center gap-3">
               <Loader2 className="h-6 w-6 animate-spin text-[#17365D]" />
-              <p className="text-sm text-[#64748B]">Loading members...</p>
+              <p className="text-sm text-[#64748B]">{t("collection.loadingMembers")}</p>
             </div>
           ) : isError ? (
             <div className="flex min-h-[220px] flex-col items-center justify-center text-center">
               <AlertCircle className="h-8 w-8 text-red-500" />
 
               <p className="mt-3 text-sm font-medium text-[#172B4D]">
-                Unable to load members
+                {t("collection.unableMembers")}
               </p>
 
               <p className="mt-1 text-xs text-[#64748B]">
                 {error instanceof Error
                   ? error.message
-                  : "Something went wrong."}
+                  : t("collection.genericError")}
               </p>
 
               <button
@@ -173,7 +175,7 @@ export default function AddCollectionDialog({
                 onClick={() => refetch()}
                 className="mt-4 text-sm font-medium text-[#17365D] hover:underline"
               >
-                Try again
+                {t("collection.retry")}
               </button>
             </div>
           ) : filteredMembers.length === 0 ? (
@@ -183,13 +185,13 @@ export default function AddCollectionDialog({
               </div>
 
               <p className="mt-3 text-sm font-medium text-[#172B4D]">
-                {search ? "No members found" : "No registered members"}
+                {search ? t("collection.noMembersFound") : t("collection.noMembers")}
               </p>
 
               <p className="mt-1 text-xs text-[#64748B]">
                 {search
-                  ? "Try searching with a different name or phone number."
-                  : "Register a member before recording a collection."}
+                  ? t("collection.searchDifferent")
+                  : t("collection.registerFirst")}
               </p>
 
               <button
@@ -201,7 +203,7 @@ export default function AddCollectionDialog({
                 className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#102744] px-4 text-sm font-medium text-white transition hover:bg-[#17365D]"
               >
                 <Plus size={16} />
-                Add New Member
+                {t("collection.addNewMember")}
               </button>
             </div>
           ) : (
@@ -252,7 +254,7 @@ export default function AddCollectionDialog({
 
                       {isSelected && (
                         <span className="text-[10px] font-semibold text-[#17365D]">
-                          Selected
+                          {t("collection.selected")}
                         </span>
                       )}
                     </div>
@@ -270,7 +272,7 @@ export default function AddCollectionDialog({
             onClick={() => onOpenChange(false)}
             className="h-10 rounded-lg border border-[#E2E8F0] bg-white px-5 text-sm font-medium text-[#17365D] transition hover:bg-[#F5F7FA]"
           >
-            Cancel
+            {t("collection.cancel")}
           </button>
 
           <button
@@ -279,7 +281,7 @@ export default function AddCollectionDialog({
             onClick={handleContinue}
             className="h-10 rounded-lg bg-[#102744] px-5 text-sm font-medium text-white transition hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Continue
+            {t("collection.continue")}
           </button>
         </div>
       </div>

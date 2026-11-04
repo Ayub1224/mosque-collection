@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useCreateCollection } from "@/hooks/collections/useCreateCollection";
 import type { Collection } from "@/types/collection";
 import CollectionSuccessDialog from "../collections/components/collection-success-dialog";
+import { useLanguage } from "./admin-profile-context";
 
 interface AddCollectionFormProps {
   member: Member;
@@ -22,6 +23,7 @@ export default function AddCollectionForm({
   onChangeMember,
   onClose,
 }: AddCollectionFormProps) {
+  const { t, language } = useLanguage();
   const createCollectionMutation = useCreateCollection();
   const [submitError, setSubmitError] = useState("");
   const [savedCollection, setSavedCollection] = useState<Collection | null>(
@@ -119,18 +121,18 @@ export default function AddCollectionForm({
               id="add-collection-form-title"
               className="text-xl font-semibold text-[#102744]"
             >
-              Add Collection
+              {t("collection.add")}
             </h2>
 
             <p className="mt-1 text-sm text-[#64748B]">
-              Record a regular monthly contribution.
+              {t("collection.addDescription")}
             </p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close form"
+            aria-label={t("collection.close")}
             className="rounded-lg p-2 text-[#64748B] transition hover:bg-[#F5F7FA] hover:text-[#102744]"
           >
             <X size={20} />
@@ -175,7 +177,7 @@ export default function AddCollectionForm({
                 className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[#17365D] transition hover:bg-white"
               >
                 <ArrowLeft size={14} />
-                Change
+                {t("collection.changeMember")}
               </button>
             </div>
 
@@ -186,7 +188,7 @@ export default function AddCollectionForm({
                   htmlFor="collection-amount"
                   className="text-sm font-medium text-[#172B4D]"
                 >
-                  Contribution Amount <span className="text-red-500">*</span>
+                  {t("collection.contributionAmount")} <span className="text-red-500">*</span>
                 </label>
 
                 <span className="text-[10px] font-medium uppercase tracking-wider text-[#94A3B8]">
@@ -216,7 +218,7 @@ export default function AddCollectionForm({
 
               <div className="flex flex-wrap items-center gap-2">
                 <span className="mr-1 text-[11px] font-medium uppercase text-[#64748B]">
-                  Add:
+                  {t("collection.addAmount")}
                 </span>
 
                 {[500, 1000, 2000, 5000].map((value) => (
@@ -231,13 +233,13 @@ export default function AddCollectionForm({
                     }
                     className="rounded-full bg-[#F5F7FA] px-3 py-1.5 text-xs font-medium text-[#17365D] transition hover:bg-[#E8EEF5]"
                   >
-                    + ₹{value.toLocaleString("en-IN")}
+                    + ₹{value.toLocaleString(language === "hi" ? "hi-IN" : "en-IN")}
                   </button>
                 ))}
               </div>
 
               <p className="text-xs text-[#94A3B8]">
-                Whole rupees only. Amount must be greater than zero.
+                {t("collection.rupeesOnly")}
               </p>
             </div>
 
@@ -247,7 +249,7 @@ export default function AddCollectionForm({
                 htmlFor="collection-date"
                 className="block text-sm font-medium text-[#172B4D]"
               >
-                Date Received <span className="text-red-500">*</span>
+                {t("collection.received")} <span className="text-red-500">*</span>
               </label>
 
               <input
@@ -269,15 +271,14 @@ export default function AddCollectionForm({
                 htmlFor="collection-note"
                 className="block text-sm font-medium text-[#172B4D]"
               >
-                Note{" "}
-                <span className="font-normal text-[#94A3B8]">(Optional)</span>
+                {t("collection.note")} <span className="font-normal text-[#94A3B8]">{t("collection.optional")}</span>
               </label>
 
               <textarea
                 id="collection-note"
                 rows={3}
                 {...register("note")}
-                placeholder="Add any additional details about this contribution..."
+                placeholder={t("collection.notePlaceholder")}
                 className="w-full resize-none rounded-lg border border-[#E2E8F0] bg-[#F5F7FA] px-3 py-2.5 text-sm text-[#172B4D] outline-none transition placeholder:text-[#94A3B8] focus:border-[#17365D] focus:bg-white"
               />
             </div>
@@ -296,7 +297,7 @@ export default function AddCollectionForm({
               onClick={onClose}
               className="h-10 rounded-lg border border-[#E2E8F0] bg-white px-5 text-sm font-medium text-[#17365D] transition hover:bg-[#F5F7FA]"
             >
-              Cancel
+              {t("collection.cancel")}
             </button>
 
             <button
@@ -309,8 +310,8 @@ export default function AddCollectionForm({
               className="h-10 rounded-lg bg-[#102744] px-5 text-sm font-medium text-white transition hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {createCollectionMutation.isPending
-                ? "Saving..."
-                : "Save Collection"}
+                ? t("collection.saving")
+                : t("collection.save")}
             </button>
           </div>
         </form>

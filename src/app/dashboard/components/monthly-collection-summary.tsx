@@ -3,6 +3,7 @@
 
 import { useMemo } from "react";
 import { useCollections } from "@/hooks/collections/useCollections";
+import { useLanguage } from "./admin-profile-context";
 
 const MONTHS = [
   { month: 4, label: "Apr" },
@@ -19,26 +20,22 @@ const MONTHS = [
   { month: 3, label: "Mar" },
 ];
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-
-const formatCompactCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-IN", {
+const formatCompactCurrency = (amount: number, locale: string) =>
+  new Intl.NumberFormat(locale, {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(amount);
 
 export default function MonthlyCollectionSummary() {
+  const { language, t } = useLanguage();
+  const locale = language === "hi" ? "hi-IN" : "en-IN";
   const { data: collections = [], isLoading, isError } = useCollections();
 
   const currentYear = new Date().getFullYear();
 
   const monthlyData = useMemo(() => {
-    return MONTHS.map(({ month, label }) => {
+    return MONTHS.map(({ month }) => {
+      const label = new Intl.DateTimeFormat(language === "hi" ? "hi-IN" : "en-IN", { month: "short" }).format(new Date(2024, month - 1, 1));
       const total = collections
         .filter((collection) => {
           const [year, collectionMonth] = collection.donationDate
@@ -55,7 +52,7 @@ export default function MonthlyCollectionSummary() {
 
       return { month, label, total };
     });
-  }, [collections, currentYear]);
+  }, [collections, currentYear, language]);
 
   const maxAmount = Math.max(
     ...monthlyData.map((item) => item.total),
@@ -72,33 +69,31 @@ export default function MonthlyCollectionSummary() {
       {/* Chart heading */}
       <div className="flex flex-col justify-between gap-4 border-b border-[#F1F5F9] pb-5 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-base font-semibold tracking-tight text-[#102744]">
-            Monthly Collection Summary
-          </h2>
+          <h2 className="text-base font-semibold tracking-tight text-[#102744]">{t("dashboard.monthlySummary")}</h2>
 
           <p className="mt-1 text-xs text-[#64748B]">
-            Monthly collection performance
+            {t("dashboard.monthlyPerformance")}
           </p>
         </div>
 
         <div className="rounded-lg bg-[#F5F7FA] px-4 py-3 sm:min-w-44">
           <p className="text-xs font-medium text-[#64748B]">
-            Total collected this year
+            {t("dashboard.totalYear")}
           </p>
 
           <p className="mt-1 text-xl font-bold tracking-tight text-[#102744]">
-            {isLoading ? "Loading..." : formatCurrency(annualTotal)}
+            {isLoading ? t("common.loading") : new Intl.NumberFormat(language === "hi" ? "hi-IN" : "en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(annualTotal)}
           </p>
         </div>
       </div>
 
       {isLoading ? (
         <p className="py-16 text-center text-sm text-[#64748B]">
-          Loading monthly collections...
+          {t("dashboard.loadingMonthly")}
         </p>
       ) : isError ? (
         <p className="py-16 text-center text-sm text-red-600">
-          Unable to load monthly collection data.
+          {t("dashboard.loadMonthlyError")}
         </p>
       ) : (
         <div className="mt-6">
@@ -111,10 +106,10 @@ export default function MonthlyCollectionSummary() {
                 <div
                   key={item.month}
                   className="flex min-w-0 flex-col items-center"
-                  title={`${item.label}: ${formatCurrency(item.total)}`}
+                  title={`${item.label}: ${new Intl.NumberFormat(locale, { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(item.total)}`}
                 >
                   <p className="mb-3 h-4 truncate text-[10px] font-medium tabular-nums text-[#64748B] sm:text-xs">
-                    {formatCompactCurrency(item.total)}
+                    {formatCompactCurrency(item.total, locale)}
                   </p>
 
                   <div className="flex h-40 w-full items-end justify-center overflow-hidden rounded-lg bg-[#F5F7FA] sm:h-44">
@@ -134,7 +129,7 @@ export default function MonthlyCollectionSummary() {
 
           {annualTotal === 0 && (
             <p className="mt-5 text-center text-xs text-[#94A3B8]">
-              No collections recorded for {currentYear} yet.
+              {t("dashboard.noCollectionsYear").replace("{year}", currentYear.toLocaleString(language === "hi" ? "hi-IN" : "en-IN"))}
             </p>
           )}
         </div>

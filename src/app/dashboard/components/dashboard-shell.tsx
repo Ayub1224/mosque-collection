@@ -4,14 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SignOutButton from "@/components/sign-out-button";
-import { AdminProfileProvider } from "./admin-profile-context";
+import { AdminProfileProvider, useLanguage } from "./admin-profile-context";
 import { LiaMosqueSolid } from "react-icons/lia";
+import { toast } from "sonner";
 
 type DashboardShellProps = {
   children: React.ReactNode;
   adminEmail: string;
   adminName: string;
   adminDesignation: string;
+  initialLanguage: "en" | "hi";
 };
 
 const navigation = [
@@ -25,7 +27,13 @@ export default function DashboardShell({
   adminEmail,
   adminName,
   adminDesignation,
+  initialLanguage,
 }: DashboardShellProps) {
+  return <AdminProfileProvider adminName={adminName} initialLanguage={initialLanguage}><DashboardContents adminName={adminName} adminDesignation={adminDesignation}>{children}</DashboardContents></AdminProfileProvider>;
+}
+
+function DashboardContents({ children, adminName, adminDesignation }: { children: React.ReactNode; adminName: string; adminDesignation: string }) {
+  const { t, language, languageSaving, updateLanguage } = useLanguage();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -69,7 +77,7 @@ export default function DashboardShell({
             }`}
           >
             <NavIcon name={item.icon} />
-            {item.label}
+            {t(item.icon === "dashboard" ? "common.dashboard" : item.icon === "members" ? "common.members" : "common.collection")}
           </Link>
         );
       })}
@@ -100,7 +108,7 @@ export default function DashboardShell({
             <p className="truncate text-sm items-center font-semibold text-[#102744]">
               Gausul Wara Masjid
             </p>
-            <p className="mt-0.5 text-xs text-[#64748B]">Administration</p>
+            <p className="mt-0.5 text-xs text-[#64748B]">{t("common.administrator")}</p>
           </div>
           <button
             type="button"
@@ -114,7 +122,7 @@ export default function DashboardShell({
 
         <div className="flex-1">
           <p className="px-6 pb-1 pt-6 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
-            Workspace
+            {t("navigation.workspace")}
           </p>
           {navLinks}
         </div>
@@ -174,7 +182,7 @@ export default function DashboardShell({
               aria-haspopup="menu"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-[#64748B] transition-colors hover:bg-[#F5F7FA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17365D]"
             >
-              <span className="hidden sm:inline">Welcome,</span>
+              <span className="hidden sm:inline">{t("common.welcome")}</span>
 
               <span className="max-w-40 truncate font-semibold text-[#172B4D]">
                 {adminName}
@@ -204,9 +212,14 @@ export default function DashboardShell({
                     {adminName}
                   </p>
                   <p className="mt-1 text-[11px] text-[#64748B]">
-                    Administrator
+                    {t("common.administrator")}
                   </p>
                 </div>
+                <label className="block px-3 py-2 text-xs font-medium text-[#64748B]" htmlFor="language-select">{t("common.language")}
+                  <select id="language-select" disabled={languageSaving} value={language} onChange={async (event) => { const next = event.target.value as "en" | "hi"; if (await updateLanguage(next)) toast.success(next === "hi" ? "भाषा प्राथमिकता सहेजी गई।" : "Language preference saved."); else toast.error(next === "hi" ? "भाषा अपडेट नहीं हो सकी।" : "Unable to update language."); }} className="mt-1 w-full rounded-md border border-[#E2E8F0] bg-white px-2 py-2 text-[#172B4D]">
+                    <option value="en">English</option><option value="hi">हिन्दी</option>
+                  </select>
+                </label>
 
                 <div className="pt-2">
                   <div
@@ -223,9 +236,7 @@ export default function DashboardShell({
         </header>
 
         <main className="px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-8">
-          <AdminProfileProvider adminName={adminName}>
-            {children}
-          </AdminProfileProvider>
+          {children}
         </main>
       </div>
 
