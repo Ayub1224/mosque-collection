@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import { useMember } from "@/hooks/members/use-member";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { SiWhatsapp } from "react-icons/si";
+
+import WhatsAppReminderDialog from "../../collections/components/whatsapp-reminder-dialog";
 import { useCollections } from "@/hooks/collections/useCollections";
 
 const MONTHS = [
@@ -22,6 +25,21 @@ const MONTHS = [
   { month: 3, label: "Mar" },
 ];
 
+function isCurrentOrPreviousMonth(month: number, year: number): boolean {
+  const now = new Date();
+
+  const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const targetMonth = new Date(year, month - 1, 1);
+
+  return (
+    targetMonth.getTime() === currentMonth.getTime() ||
+    targetMonth.getTime() === previousMonth.getTime()
+  );
+}
+
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -32,6 +50,10 @@ const formatCurrency = (amount: number) =>
 export default function MemberDetailsPage() {
   const params = useParams<{ memberId: string }>();
   const memberId = decodeURIComponent(params.memberId);
+  const [selectedReminder, setSelectedReminder] = useState<{
+    month: number;
+    year: number;
+  } | null>(null);
 
   const { data: member, isLoading, isError, error } = useMember(memberId);
 
@@ -66,7 +88,7 @@ export default function MemberDetailsPage() {
         })
         .reduce((sum, collection) => sum + collection.amount, 0);
 
-      return { month, label, total };
+      return { month, label, total, year };
     });
   }, [collections, memberId, financialYearStart]);
 
@@ -209,21 +231,58 @@ export default function MemberDetailsPage() {
           </p>
         ) : (
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-            {monthlyData.map((item) => (
-              <div
-                key={item.month}
-                className="rounded-xl border border-[#E2E8F0] bg-white p-3"
-              >
-                <p className="text-xs text-[#64748B]">{item.label}</p>
+            {monthlyData.map((item) => {
+              const canSendReminder =
+                member.status === "Active" &&
+                item.total <= 0 &&
+                isCurrentOrPreviousMonth(item.month, item.year);
 
-                <p className="mt-1 text-sm font-semibold text-[#172B4D]">
-                  {item.total > 0 ? formatCurrency(item.total) : "—"}
-                </p>
-              </div>
-            ))}
+              return (
+                <div
+                  key={item.month}
+                  className="group rounded-xl border border-[#E2E8F0] bg-white p-3 transition-colors hover:border-[#CBD5E1]"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-xs text-[#64748B]">{item.label}</p>
+
+                      <p className="mt-1 text-sm font-semibold text-[#172B4D]">
+                        {item.total > 0 ? formatCurrency(item.total) : "—"}
+                      </p>
+                    </div>
+
+                    {canSendReminder && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedReminder({
+                            month: item.month,
+                            year: item.year,
+                          })
+                        }
+                        title={`Prepare ${item.label} chanda reminder`}
+                        aria-label={`Prepare WhatsApp reminder for ${item.label}`}
+                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#16834A] opacity-100 transition hover:bg-[#EAF7EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16834A] md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                      >
+                        <SiWhatsapp size={17} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
+      {selectedReminder && (
+        <WhatsAppReminderDialog
+          open={true}
+          onClose={() => setSelectedReminder(null)}
+          member={member}
+          month={selectedReminder.month}
+          year={selectedReminder.year}
+        />
+      )}
     </section>
   );
 }
