@@ -104,7 +104,7 @@ export async function POST(request: Request) {
       const now = new Date().toISOString();
       const memberId = `MEM-${randomUUID()}`;
 
-      // 6. Append the new member to Google Sheets.
+      // 6. Allocate the next serial without reusing numbers held by inactive members.
       const validSerials = rows.slice(1).map((row) => String(row[8] ?? ""));
       const highestSerial = validSerials.reduce((highest, serialNo) => {
         return /^\d{3}$/.test(serialNo)
@@ -116,11 +116,12 @@ export async function POST(request: Request) {
         throw new Error("No 3-digit member serial numbers remain.");
       }
 
-      // Google Sheets returns the actual row allocated by append, so concurrent
-      // serverless instances derive different serials without a process-local counter.
-      const appended = await sheets.spreadsheets.values.append({
+      const serialNo = (highestSerial + 1).toString().padStart(3, "0");
+
+      // Append all nine columns together; RAW preserves serialNo as a string (e.g. "001").
+      await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: "Members!A:H",
+        range: MEMBERS_SHEET_RANGE,
         valueInputOption: "RAW",
         insertDataOption: "INSERT_ROWS",
         requestBody: {
@@ -134,22 +135,10 @@ export async function POST(request: Request) {
               "Active",
               now,
               now,
+              serialNo,
             ],
           ],
         },
-      });
-
-      const appendedRow = Number(/!(?:A)(\d+):/.exec(appended.data.updates?.updatedRange ?? "")?.[1]);
-      const nextSerial = Math.max(highestSerial, rows.length - 1) + (appendedRow - rows.length);
-      if (!Number.isInteger(appendedRow) || nextSerial < 1 || nextSerial > 999) {
-        throw new Error("Unable to allocate a valid member serial number.");
-      }
-      const serialNo = String(nextSerial).padStart(3, "0");
-      await sheets.spreadsheets.values.update({
-        spreadsheetId,
-        range: `Members!I${appendedRow}`,
-        valueInputOption: "RAW",
-        requestBody: { values: [[serialNo]] },
       });
 
       return {
