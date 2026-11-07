@@ -38,6 +38,7 @@ export default function MembersPage() {
     data: collections = [],
     isLoading: isCollectionsLoading,
     isError: isCollectionsError,
+    error: collectionsError,
   } = useCollections();
 
   const statusFromUrl = searchParams.get("status");
@@ -172,6 +173,12 @@ export default function MembersPage() {
     (contributionFilter !== "All" && isCollectionsLoading);
   const isListingError =
     isError || (contributionFilter !== "All" && isCollectionsError);
+  const listingErrorMessage =
+    isError && error instanceof Error
+      ? error.message
+      : isCollectionsError && collectionsError instanceof Error
+        ? collectionsError.message
+        : undefined;
 
   return (
     <section className="space-y-6">
@@ -200,10 +207,11 @@ export default function MembersPage() {
 
       <MembersList
         members={filteredMembers}
+        totalMembers={members.length}
         contributingMemberIds={contributingMemberIds}
         isLoading={isListingLoading}
         isError={isListingError}
-        errorMessage={error instanceof Error ? error.message : undefined}
+        errorMessage={listingErrorMessage}
         statusPending={updateStatusMutation.isPending}
         onStatusClick={openStatusDialog}
         search={search}

@@ -39,22 +39,27 @@ export function MemberActions({
   );
 
   return (
-    <div className={`flex items-center justify-end gap-2 ${compact ? "flex-wrap" : "whitespace-nowrap"}`}>
-      {!hasContributed && (
-        <a
-          href={getWhatsAppUrl(member.phoneNumber)}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={messageLabel}
-          title={messageLabel}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#14805E] transition-colors duration-200 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-1"
-        >
-          <WhatsAppMark />
-        </a>
-      )}
+    <div className="flex flex-nowrap items-center justify-end gap-2">
+      <span
+        className={`block shrink-0 ${compact ? "h-11 w-11" : "h-9 w-9"}`}
+        aria-hidden={hasContributed ? "true" : undefined}
+      >
+        {!hasContributed && (
+          <a
+            href={getWhatsAppUrl(member.phoneNumber)}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={messageLabel}
+            title={messageLabel}
+            className={`inline-flex h-full w-full shrink-0 items-center justify-center rounded-lg text-[#14805E] transition-colors duration-200 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-1 ${compact ? "min-h-11 min-w-11" : "min-h-9 min-w-9"}`}
+          >
+            <WhatsAppMark />
+          </a>
+        )}
+      </span>
       <Link
         href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`}
-        className="inline-flex min-h-9 items-center justify-center rounded-lg px-2 text-sm font-medium text-[#475569] transition-colors duration-200 hover:bg-slate-100 hover:text-[#172B4D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] focus-visible:ring-offset-1"
+        className={`inline-flex items-center justify-center whitespace-nowrap rounded-lg px-2 text-sm font-medium text-[#475569] transition-colors duration-200 hover:bg-slate-100 hover:text-[#172B4D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] focus-visible:ring-offset-1 ${compact ? "min-h-11" : "min-h-9"}`}
       >
         {t("members.editAction")}
       </Link>
@@ -62,7 +67,7 @@ export function MemberActions({
         type="button"
         disabled={statusPending}
         onClick={() => onStatusClick(member)}
-        className={`inline-flex min-h-9 items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 ${
+        className={`inline-flex items-center justify-center whitespace-nowrap rounded-lg px-2 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 ${compact ? "min-h-11" : "min-h-9"} ${
           member.status === "Active"
             ? "text-[#A33131] hover:bg-red-50"
             : "text-emerald-800 hover:bg-emerald-50"

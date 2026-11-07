@@ -67,6 +67,7 @@ const hi: { [K in keyof typeof en]: { [P in keyof (typeof en)[K]]: string } } =
       deactivate: "निष्क्रिय करें",
       activate: "सक्रिय करें",
       noResults: "कोई सदस्य नहीं मिला",
+      noMembers: "अभी तक कोई सदस्य पंजीकृत नहीं है",
       add: "सदस्य जोड़ें",
       addNew: "नया सदस्य जोड़ें",
       registerDescription: "मस्जिद निर्देशिका में नया सदस्य दर्ज करें।",

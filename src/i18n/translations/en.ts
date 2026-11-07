@@ -64,6 +64,7 @@ const en = {
     deactivate: "Deactivate",
     activate: "Make Active",
     noResults: "No members found",
+    noMembers: "No registered members yet",
     add: "Add Member",
     addNew: "Add New Member",
     registerDescription: "Register a new member in the mosque directory.",

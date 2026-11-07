@@ -8,6 +8,7 @@ import { MembersToolbar, type ContributionFilter, type StatusFilter } from "./me
 
 type MembersListProps = {
   members: Member[];
+  totalMembers: number;
   contributingMemberIds: Set<string>;
   isLoading: boolean;
   isError: boolean;
@@ -74,6 +75,7 @@ function MembersLoadingState({ label }: { label: string }) {
 
 export function MembersList({
   members,
+  totalMembers,
   contributingMemberIds,
   isLoading,
   isError,
@@ -119,16 +121,26 @@ export function MembersList({
       ) : isError ? (
         <StatusNotice title={errorMessage || t("members.loadError")} isError />
       ) : members.length === 0 ? (
-        <StatusNotice title={t("members.noResults")} description={t("members.tryAgain")} />
+        totalMembers === 0 ? (
+          <StatusNotice
+            title={t("members.noMembers")}
+            description={t("members.registerDescription")}
+          />
+        ) : (
+          <StatusNotice
+            title={t("members.noResults")}
+            description={t("members.tryAgain")}
+          />
+        )
       ) : (
         <>
           <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-[60rem] table-fixed text-left text-sm">
+            <table className="w-full min-w-[69rem] table-fixed text-left text-sm">
               <colgroup>
                 <col className="w-[4.5rem]" />
                 <col className="w-[13rem]" />
                 <col className="w-[9rem]" />
-                <col />
+                <col className="w-[12rem]" />
                 <col className="w-[8.5rem]" />
                 <col className="w-[7rem]" />
                 <col className="w-[15rem]" />
