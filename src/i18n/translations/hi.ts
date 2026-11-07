@@ -55,7 +55,9 @@ const hi: { [K in keyof typeof en]: { [P in keyof (typeof en)[K]]: string } } =
     },
     members: {
       title: "सदस्य",
+      directory: "सदस्य निर्देशिका",
       serialNumber: "क्रमांक",
+      searchByMember: "सदस्य खोजें",
       messageOnWhatsApp: "{name} को WhatsApp संदेश भेजें",
       search: "नाम या फ़ोन खोजें...",
       allStatus: "सभी स्थितियाँ",
@@ -96,6 +98,8 @@ const hi: { [K in keyof typeof en]: { [P in keyof (typeof en)[K]]: string } } =
       allMembers: "सभी सदस्य",
       viewManage: "पंजीकृत सदस्यों को देखें और प्रबंधित करें।",
       allStatusFilter: "सभी स्थितियाँ",
+      filterStatusLabel: "सदस्य स्थिति",
+      monthlyContributionLabel: "मासिक योगदान",
       memberId: "सदस्य आईडी",
       name: "नाम",
       joinedDate: "शामिल होने की तारीख",
