@@ -8,6 +8,7 @@ import { useMembers } from "@/hooks/members/use-members";
 import { useUpdateMemberStatus } from "@/hooks/members/use-update-member-status";
 import type { Member } from "@/types/member";
 import { useLanguage } from "../components/admin-profile-context";
+import { useCollections } from "@/hooks/collections/useCollections";
 
 import {
   AlertDialog,
@@ -19,10 +20,21 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+type ContributionFilter = "All" | "Contributors" | "NonContributors";
+
 export default function MembersPage() {
   const { t, language } = useLanguage();
   const locale = language === "hi" ? "hi-IN" : "en-IN";
   const searchParams = useSearchParams();
+  const [contributionFilter, setContributionFilter] =
+    useState<ContributionFilter>("All");
+
+  const {
+    data: collections = [],
+    isLoading: isCollectionsLoading,
+    isError: isCollectionsError,
+    error: collectionsError,
+  } = useCollections();
 
   const statusFromUrl = searchParams.get("status");
 
@@ -84,6 +96,27 @@ export default function MembersPage() {
     }
   };
 
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  const contributingMemberIds = useMemo(() => {
+    return new Set(
+      collections
+        .filter((collection) => {
+          const [year, month] = collection.donationDate.split("-").map(Number);
+
+          return (
+            year === currentYear &&
+            month === currentMonth &&
+            collection.recordStatus === "Active" &&
+            collection.amount > 0
+          );
+        })
+        .map((collection) => collection.memberId),
+    );
+  }, [collections, currentMonth, currentYear]);
+
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
       const matchesSearch =
@@ -93,9 +126,22 @@ export default function MembersPage() {
       const matchesStatus =
         statusFilter === "All" || member.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
+      const hasContributed = contributingMemberIds.has(member.memberId);
+
+      const matchesContribution =
+        contributionFilter === "All" ||
+        (contributionFilter === "Contributors" && hasContributed) ||
+        (contributionFilter === "NonContributors" && !hasContributed);
+
+      return matchesSearch && matchesStatus && matchesContribution;
     });
-  }, [members, search, statusFilter]);
+  }, [
+    members,
+    search,
+    statusFilter,
+    contributionFilter,
+    contributingMemberIds,
+  ]);
 
   const summaryCards = [
     {
@@ -119,7 +165,9 @@ export default function MembersPage() {
       {/* Page heading */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-[#102744]">{t("members.title")}</h1>
+          <h1 className="text-2xl font-semibold text-[#102744]">
+            {t("members.title")}
+          </h1>
           <p className="mt-1 text-sm text-[#64748B]">
             {t("members.manageDescription")}
           </p>
@@ -182,6 +230,26 @@ export default function MembersPage() {
                 <option value="Active">{t("members.active")}</option>
                 <option value="Inactive">{t("members.inactive")}</option>
               </select>
+              <select
+                value={contributionFilter}
+                onChange={(event) =>
+                  setContributionFilter(
+                    event.target.value as ContributionFilter,
+                  )
+                }
+                aria-label={t("members.filterContribution")}
+                className="h-10 rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none focus:border-[#17365D] sm:w-52"
+              >
+                <option value="All">
+                  {t("members.allContributionFilter")}
+                </option>
+                <option value="Contributors">
+                  {t("members.contributorsThisMonth")}
+                </option>
+                <option value="NonContributors">
+                  {t("members.nonContributorsThisMonth")}
+                </option>
+              </select>
             </div>
           </div>
         </div>
@@ -194,15 +262,22 @@ export default function MembersPage() {
                 <th className="px-5 py-4 font-medium">Serial No.</th>
                 <th className="px-5 py-4 font-medium">{t("members.name")}</th>
                 <th className="px-5 py-4 font-medium">{t("members.phone")}</th>
-                <th className="px-5 py-4 font-medium">{t("members.address")}</th>
-                <th className="px-5 py-4 font-medium">{t("members.joinedDate")}</th>
+                <th className="px-5 py-4 font-medium">
+                  {t("members.address")}
+                </th>
+                <th className="px-5 py-4 font-medium">
+                  {t("members.joinedDate")}
+                </th>
                 <th className="px-5 py-4 font-medium">{t("members.status")}</th>
-                <th className="px-5 py-4 text-right font-medium">{t("members.actions")}</th>
+                <th className="px-5 py-4 text-right font-medium">
+                  {t("members.actions")}
+                </th>
               </tr>
             </thead>
 
             <tbody>
-              {isLoading ? (
+              {isLoading ||
+              (contributionFilter !== "All" && isCollectionsLoading) ? (
                 <tr>
                   <td
                     colSpan={8}
@@ -211,7 +286,8 @@ export default function MembersPage() {
                     {t("members.loadingMembers")}
                   </td>
                 </tr>
-              ) : isError ? (
+              ) : isError ||
+                (contributionFilter !== "All" && isCollectionsError) ? (
                 <tr>
                   <td
                     colSpan={8}
@@ -259,7 +335,9 @@ export default function MembersPage() {
                             : "bg-gray-100 text-gray-600"
                         }`}
                       >
-                        {member.status === "Active" ? t("members.active") : t("members.inactive")}
+                        {member.status === "Active"
+                          ? t("members.active")
+                          : t("members.inactive")}
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
@@ -294,14 +372,15 @@ export default function MembersPage() {
           </table>
         </div>
 
-    
         {/* Mobile cards */}
         <div className="divide-y divide-[#E2E8F0] md:hidden">
-          {isLoading ? (
+          {isLoading ||
+          (contributionFilter !== "All" && isCollectionsLoading) ? (
             <p className="px-5 py-14 text-center text-sm text-[#64748B]">
               {t("members.loadingMembers")}
             </p>
-          ) : isError ? (
+          ) : isError ||
+            (contributionFilter !== "All" && isCollectionsError) ? (
             <p className="px-5 py-14 text-center text-sm text-red-600">
               {t("members.loadError")}
             </p>
@@ -328,10 +407,14 @@ export default function MembersPage() {
                     <p className="font-semibold text-[#172B4D]">
                       {member.fullName}
                     </p>
-                    <span className="text-sm font-medium text-[#64748B]">Serial No. {member.serialNo}</span>
+                    <span className="text-sm font-medium text-[#64748B]">
+                      Serial No. {member.serialNo}
+                    </span>
 
                     <span className="text-xs text-[#64748B]">
-                      {member.status === "Active" ? t("members.active") : t("members.inactive")}
+                      {member.status === "Active"
+                        ? t("members.active")
+                        : t("members.inactive")}
                     </span>
                   </div>
 
@@ -340,7 +423,6 @@ export default function MembersPage() {
                   <p className="text-sm text-[#64748B]">
                     {member.address || t("members.noAddress")}
                   </p>
-
                 </div>
 
                 {/* Independent actions */}
@@ -362,7 +444,9 @@ export default function MembersPage() {
                         : "text-green-700"
                     }`}
                   >
-                    {member.status === "Active" ? t("members.deactivate") : t("members.activate")}
+                    {member.status === "Active"
+                      ? t("members.deactivate")
+                      : t("members.activate")}
                   </button>
                 </div>
               </div>
@@ -373,7 +457,10 @@ export default function MembersPage() {
         {/* Pagination placeholder */}
         <div className="flex items-center justify-between border-t border-[#E2E8F0] px-4 py-3 sm:px-5">
           <p className="text-xs text-[#64748B]">
-            {t("members.showing").replace("{count}", filteredMembers.length.toLocaleString(locale))}
+            {t("members.showing").replace(
+              "{count}",
+              filteredMembers.length.toLocaleString(locale),
+            )}
           </p>
           <p className="text-xs text-[#94A3B8]">
             {t("members.paginationPlaceholder")}
@@ -390,7 +477,7 @@ export default function MembersPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>
               {statusFeedback
-              ? statusFeedback.type === "success"
+                ? statusFeedback.type === "success"
                   ? t("members.updated")
                   : t("members.unableUpdate")
                 : selectedMember?.status === "Active"
@@ -401,7 +488,10 @@ export default function MembersPage() {
             <AlertDialogDescription>
               {statusFeedback
                 ? statusFeedback.message
-                : (selectedMember?.status === "Active" ? t("members.askDeactivate") : t("members.askActivate")).replace("{name}", selectedMember?.fullName ?? "")}
+                : (selectedMember?.status === "Active"
+                    ? t("members.askDeactivate")
+                    : t("members.askActivate")
+                  ).replace("{name}", selectedMember?.fullName ?? "")}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
