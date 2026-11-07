@@ -107,6 +107,11 @@ export default function MonthlyCollectionOverview({
 
   const financialYearStart = currentMonth >= 3 ? currentYear : currentYear - 1;
   const locale = language === "hi" ? "hi-IN" : "en-IN";
+  const yearFormatter = new Intl.NumberFormat(locale, { useGrouping: false });
+  const financialYearPeriod = t("dashboard.financialYearPeriod").replace(
+    "{years}",
+    `${yearFormatter.format(financialYearStart)}–${yearFormatter.format(financialYearStart + 1)}`,
+  );
   const localizedMonths = MONTHS.map(({ month }) => ({
     month,
     label: new Intl.DateTimeFormat(locale, { month: "short" }).format(
@@ -208,7 +213,9 @@ export default function MonthlyCollectionOverview({
                       ? "bg-[#F1F5F9] font-semibold text-[#17365D] hover:bg-[#E2EAF3]"
                       : "font-normal text-[#94A3B8] hover:bg-[#F8FAFC] hover:text-[#64748B]"
                   }`}
-                  aria-label={`View ${label} donations for ${member.fullName}`}
+                  aria-label={t("collection.viewMonthDonations")
+                    .replace("{month}", label)
+                    .replace("{name}", member.fullName)}
                 >
                   {monthData?.total
                     ? formatLocalizedCurrency(monthData.total)
@@ -226,8 +233,12 @@ export default function MonthlyCollectionOverview({
                         year: monthYear,
                       })
                     }
-                    title={`Prepare ${label} reminder for ${member.fullName}`}
-                    aria-label={`Prepare WhatsApp reminder for ${member.fullName} for ${label}`}
+                    title={t("collection.prepareMonthReminder")
+                      .replace("{month}", label)
+                      .replace("{name}", member.fullName)}
+                    aria-label={t("collection.whatsAppMonthReminder")
+                      .replace("{month}", label)
+                      .replace("{name}", member.fullName)}
                     className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#16834A] opacity-100 transition hover:bg-[#EAF7EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16834A] md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                   >
                     <SiWhatsapp size={17} className="text-[#25D366]" />
@@ -266,7 +277,6 @@ export default function MonthlyCollectionOverview({
       visibleMonths,
       period,
       currentMonth,
-      language,
       t,
       formatLocalizedCurrency,
     ],
@@ -280,19 +290,24 @@ export default function MonthlyCollectionOverview({
 
   return (
     <section className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
-      {/* Section heading */}
-      <h2 className="text-base font-semibold text-[#102744]">
-        {t("dashboard.ledger")}
-      </h2>
-
-      <p className="mt-1 text-xs text-[#64748B]">
-        {t("dashboard.showingMembers")
-          .replace("{shown}", filteredRows.length.toLocaleString(locale))
-          .replace(
-            "{total}",
-            (overview?.totalMembers ?? 0).toLocaleString(locale),
-          )}
-      </p>
+      <div className="flex flex-col gap-3 border-b border-[#F1F5F9] pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-base font-semibold tracking-tight text-[#102744]">
+            {t("dashboard.ledger")}
+          </h2>
+          <p className="mt-1 text-xs text-[#64748B]">
+            {t("dashboard.showingMembers")
+              .replace("{shown}", filteredRows.length.toLocaleString(locale))
+              .replace(
+                "{total}",
+                (overview?.totalMembers ?? 0).toLocaleString(locale),
+              )}
+          </p>
+        </div>
+        <span className="w-fit rounded-full bg-[#EAF0F7] px-3 py-1.5 text-xs font-medium text-[#17365D]">
+          {financialYearPeriod}
+        </span>
+      </div>
 
       {/* Loading state */}
       {isLoading && (
@@ -329,7 +344,7 @@ export default function MonthlyCollectionOverview({
           {/* DESKTOP LEDGER */}
           {/* ================================== */}
 
-          <div className="mt-5 hidden overflow-x-auto rounded-lg border border-[#E2E8F0] md:block">
+          <div className="mt-4 hidden overflow-x-auto rounded-lg border border-[#E2E8F0] md:block">
             <table className="w-full min-w-[1500px] border-collapse text-left text-sm">
               <thead className="bg-[#F1F5F9]">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -483,7 +498,7 @@ export default function MonthlyCollectionOverview({
                   {isExpanded && (
                     <div className="border-t border-[#E2E8F0] bg-[#F8FAFC] p-4">
                       <p className="mb-3 text-xs font-semibold text-[#64748B]">
-                        Monthly Collection
+                        {t("dashboard.monthlySummary")}
                       </p>
 
                       <div className="grid grid-cols-3 gap-2">
@@ -518,6 +533,9 @@ export default function MonthlyCollectionOverview({
                                       donations: monthData?.donations ?? [],
                                     })
                                   }
+                                  aria-label={t("collection.viewMonthDonations")
+                                    .replace("{month}", label)
+                                    .replace("{name}", row.member.fullName)}
                                   className="min-w-0 flex-1 text-left"
                                 >
                                   <p className="text-xs text-[#64748B]">
@@ -541,7 +559,9 @@ export default function MonthlyCollectionOverview({
                                         year: monthYear,
                                       })
                                     }
-                                    aria-label={`WhatsApp reminder for ${row.member.fullName}, ${label}`}
+                                    aria-label={t("collection.whatsAppMonthReminder")
+                                      .replace("{month}", label)
+                                      .replace("{name}", row.member.fullName)}
                                     className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#16834A] hover:bg-[#EAF7EF]"
                                   >
                                     <SiWhatsapp
