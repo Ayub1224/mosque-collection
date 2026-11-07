@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useCollectionOverview } from "@/hooks/collections/useCollectionOverview";
@@ -20,33 +21,46 @@ export default function CollectionSummaryCards() {
   const thisMonthTotal =
     data?.rows.reduce((total, row) => {
       const month = row.months.find((item) => item.month === currentMonth);
-
       return total + (month?.total ?? 0);
     }, 0) ?? 0;
 
+  const currentMonthContributors =
+    data?.rows.filter((row) => {
+      const month = row.months.find((item) => item.month === currentMonth);
+      return (month?.total ?? 0) > 0;
+    }).length ?? 0;
+
   const noContribution =
-    (data?.totalMembers ?? 0) - (data?.totalContributors ?? 0);
+    (data?.totalMembers ?? 0) - currentMonthContributors;
 
   const cards = [
     {
       label: t("collection.total"),
-      value: new Intl.NumberFormat(locale, { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(data?.totalCollection ?? 0),
+      value: new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0,
+      }).format(data?.totalCollection ?? 0),
       description: `${t("collection.financialYear")} ${financialYearStart.toLocaleString(locale)}–${(financialYearStart + 1).toLocaleString(locale)}`,
     },
     {
       label: t("collection.thisMonth"),
-      value: new Intl.NumberFormat(locale, { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(thisMonthTotal),
+      value: new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0,
+      }).format(thisMonthTotal),
       description: t("collection.contributionsReceived"),
     },
     {
       label: t("collection.contributor"),
-      value: (data?.totalContributors ?? 0).toLocaleString(locale),
+      value: currentMonthContributors.toLocaleString(locale),
       description: t("collection.membersContributions"),
     },
     {
       label: t("collection.nonContributors"),
       value: noContribution.toLocaleString(locale),
-      description: t("collection.noContributionFy"),
+      description: t("collection.noContributionMonth"),
     },
   ];
 
@@ -56,7 +70,7 @@ export default function CollectionSummaryCards() {
         {cards.map((card) => (
           <div
             key={card.label}
-           className="h-28 animate-pulse rounded-xl border border-[#E2E8F0] bg-white sm:h-32"
+            className="h-28 animate-pulse rounded-xl border border-[#E2E8F0] bg-white sm:h-32"
           />
         ))}
       </div>
@@ -70,7 +84,9 @@ export default function CollectionSummaryCards() {
           {t("collection.unableSummary")}
         </p>
         <p className="mt-1 text-sm text-red-600">
-          {error instanceof Error ? error.message : t("collection.pleaseTryAgain")}
+          {error instanceof Error
+            ? error.message
+            : t("collection.pleaseTryAgain")}
         </p>
       </div>
     );
@@ -81,7 +97,7 @@ export default function CollectionSummaryCards() {
       {cards.map((card) => (
         <div
           key={card.label}
-      className="rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-sm sm:p-5"
+          className="rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-sm sm:p-5"
         >
           <p className="text-sm font-medium text-[#64748B]">{card.label}</p>
 
