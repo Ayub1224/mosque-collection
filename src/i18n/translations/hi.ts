@@ -55,6 +55,8 @@ const hi: { [K in keyof typeof en]: { [P in keyof (typeof en)[K]]: string } } =
     },
     members: {
       title: "सदस्य",
+      serialNumber: "क्रमांक",
+      messageOnWhatsApp: "{name} को WhatsApp संदेश भेजें",
       search: "नाम या फ़ोन खोजें...",
       allStatus: "सभी स्थितियाँ",
       active: "सक्रिय",

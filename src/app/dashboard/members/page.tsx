@@ -40,7 +40,6 @@ export default function MembersPage() {
     data: collections = [],
     isLoading: isCollectionsLoading,
     isError: isCollectionsError,
-    error: collectionsError,
   } = useCollections();
 
   const statusFromUrl = searchParams.get("status");
@@ -168,35 +167,35 @@ export default function MembersPage() {
     },
   ];
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 md:space-y-7">
       {/* Page heading */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#102744]">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#102744]">
             {t("members.title")}
           </h1>
-          <p className="mt-1 text-sm text-[#64748B]">
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-[#64748B]">
             {t("members.manageDescription")}
           </p>
         </div>
 
         <Link
           href="/dashboard/members/new"
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-4 text-sm font-medium text-white transition hover:bg-[#17365D]"
+          className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-[#102744] px-4 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#17365D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] focus-visible:ring-offset-2 active:scale-[0.98]"
         >
           {t("members.add")}
         </Link>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         {summaryCards.map((card) => (
           <div
             key={card.title}
-            className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-sm"
+            className="rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-sm sm:p-5"
           >
             <p className="text-sm font-medium text-[#64748B]">{card.title}</p>
-            <p className="mt-3 text-2xl font-semibold text-[#102744]">
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-[#102744]">
               {card.value}
             </p>
             <p className="mt-1 text-xs text-[#94A3B8]">{card.description}</p>
@@ -207,7 +206,7 @@ export default function MembersPage() {
       {/* Members listing */}
       <div className="overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
         <div className="border-b border-[#E2E8F0] p-4 sm:p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <h2 className="text-base font-semibold text-[#102744]">
                 {t("members.allMembers")}
@@ -217,21 +216,21 @@ export default function MembersPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(180px,1fr)_minmax(140px,auto)] md:grid-cols-[minmax(220px,1fr)_minmax(150px,auto)_minmax(220px,auto)] xl:w-auto xl:flex-1 xl:justify-end">
               <input
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder={t("members.search")}
                 aria-label={t("members.search")}
-                className="h-10 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm outline-none placeholder:text-[#94A3B8] focus:border-[#17365D] focus:ring-2 focus:ring-[#17365D]/10 sm:w-64"
+                className="h-10 min-w-0 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none placeholder:text-[#94A3B8] focus:border-[#17365D] focus:ring-2 focus:ring-[#17365D]/10"
               />
 
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
                 aria-label={t("members.allStatusFilter")}
-                className="h-10 rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none focus:border-[#17365D] sm:w-36"
+                className="h-10 min-w-0 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none focus:border-[#17365D] focus:ring-2 focus:ring-[#17365D]/10"
               >
                 <option value="All">{t("members.allStatusFilter")}</option>
                 <option value="Active">{t("members.active")}</option>
@@ -245,7 +244,7 @@ export default function MembersPage() {
                   )
                 }
                 aria-label={t("members.filterContribution")}
-                className="h-10 rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none focus:border-[#17365D] sm:w-52"
+                className="h-10 min-w-0 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-sm text-[#172B4D] outline-none focus:border-[#17365D] focus:ring-2 focus:ring-[#17365D]/10"
               >
                 <option value="All">
                   {t("members.allContributionFilter")}
@@ -263,10 +262,12 @@ export default function MembersPage() {
 
         {/* Desktop table */}
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#F8FAFC] text-xs text-[#64748B]">
+          <table className="w-full min-w-[1050px] text-left text-sm">
+            <thead className="bg-[#F8FAFC] text-xs uppercase tracking-wide text-[#64748B]">
               <tr>
-                <th className="px-5 py-4 font-medium">Serial No.</th>
+                <th className="px-5 py-4 font-medium">
+                  {t("members.serialNumber")}
+                </th>
                 <th className="px-5 py-4 font-medium">{t("members.name")}</th>
                 <th className="px-5 py-4 font-medium">{t("members.phone")}</th>
                 <th className="px-5 py-4 font-medium">
@@ -320,26 +321,34 @@ export default function MembersPage() {
                 filteredMembers.map((member) => (
                   <tr
                     key={member.memberId}
-                    className="border-t border-[#E2E8F0]"
+                    className="border-t border-[#E2E8F0] transition-colors duration-200 hover:bg-[#F8FAFC]"
                   >
-                    <td className="px-5 py-4">{member.serialNo}</td>
-                    <td className="px-5 py-4">
+                    <td className="whitespace-nowrap px-5 py-4 text-[#64748B]">
+                      {member.serialNo}
+                    </td>
+                    <td className="min-w-44 px-5 py-4">
                       <Link
                         href={`/dashboard/members/${encodeURIComponent(member.memberId)}`}
-                        className="font-medium text-[#172B4D] hover:text-[#17365D] hover:underline"
+                        className="font-medium text-[#172B4D] hover:text-[#17365D] hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D]"
                       >
                         {member.fullName}
                       </Link>
                     </td>
-                    <td className="px-5 py-4">{member.phoneNumber}</td>
-                    <td className="px-5 py-4">{member.address || "—"}</td>
-                    <td className="px-5 py-4">{member.joiningDate}</td>
+                    <td className="whitespace-nowrap px-5 py-4 text-[#475569]">
+                      {member.phoneNumber}
+                    </td>
+                    <td className="max-w-56 px-5 py-4 text-[#475569]">
+                      {member.address || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4 text-[#475569]">
+                      {member.joiningDate}
+                    </td>
                     <td className="px-5 py-4">
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
                           member.status === "Active"
-                            ? "bg-green-50 text-green-700"
-                            : "bg-gray-100 text-gray-600"
+                            ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/15"
+                            : "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-500/15"
                         }`}
                       >
                         {member.status === "Active"
@@ -348,15 +357,21 @@ export default function MembersPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-3">
+                      <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                         {!contributingMemberIds.has(member.memberId) && (
                           <a
                             href={getWhatsAppUrl(member.phoneNumber)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            aria-label={`Message ${member.fullName} on WhatsApp`}
-                            title="Message on WhatsApp"
-                            className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 transition hover:text-green-700"
+                            aria-label={t("members.messageOnWhatsApp").replace(
+                              "{name}",
+                              member.fullName,
+                            )}
+                            title={t("members.messageOnWhatsApp").replace(
+                              "{name}",
+                              member.fullName,
+                            )}
+                            className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-emerald-700 transition-colors duration-200 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
                           >
                             <svg
                               viewBox="0 0 24 24"
@@ -371,7 +386,7 @@ export default function MembersPage() {
                         )}
                         <Link
                           href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`}
-                          className="text-sm font-medium text-[#17365D] hover:underline"
+                          className="inline-flex h-8 items-center rounded-md px-2 text-sm font-medium text-[#17365D] transition-colors duration-200 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D]"
                         >
                           {t("members.editAction")}
                         </Link>
@@ -380,7 +395,7 @@ export default function MembersPage() {
                           type="button"
                           disabled={updateStatusMutation.isPending}
                           onClick={() => openStatusDialog(member)}
-                          className={`text-sm font-medium hover:underline disabled:opacity-50 ${
+                          className={`inline-flex h-8 items-center rounded-md px-2 text-sm font-medium transition-colors duration-200 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] disabled:opacity-50 ${
                             member.status === "Active"
                               ? "text-red-600"
                               : "text-green-700"
@@ -419,53 +434,71 @@ export default function MembersPage() {
             filteredMembers.map((member) => (
               <div
                 key={member.memberId}
-                className="relative isolate space-y-2 p-5"
+                className="relative isolate border-b border-[#E2E8F0] p-4 last:border-b-0 sm:p-5"
               >
                 {/* Full card navigation */}
                 <Link
                   href={`/dashboard/members/${encodeURIComponent(member.memberId)}`}
-                  aria-label={`View details for ${member.fullName}`}
+                  aria-label={t("members.viewDetails").replace(
+                    "{name}",
+                    member.fullName,
+                  )}
                   className="absolute inset-0 z-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#17365D]"
                 />
 
                 {/* Member information */}
-                <div className="pointer-events-none relative z-0">
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold text-[#172B4D]">
-                      {member.fullName}
-                    </p>
-                    <span className="text-sm font-medium text-[#64748B]">
-                      Serial No. {member.serialNo}
-                    </span>
-
-                    <span className="text-xs text-[#64748B]">
+                <div className="pointer-events-none relative z-0 space-y-3">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="break-words text-base font-semibold leading-6 text-[#172B4D]">
+                        {member.fullName}
+                      </p>
+                      <p className="mt-0.5 text-xs font-medium text-[#64748B]">
+                        {t("members.serialNumber")} {member.serialNo}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
+                        member.status === "Active"
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/15"
+                          : "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-500/15"
+                      }`}
+                    >
                       {member.status === "Active"
                         ? t("members.active")
                         : t("members.inactive")}
                     </span>
                   </div>
 
-                  <p className="text-sm text-[#64748B]">{member.phoneNumber}</p>
+                  <p className="break-words text-sm text-[#475569]">
+                    {member.phoneNumber}
+                  </p>
 
-                  <p className="text-sm text-[#64748B]">
+                  <p className="break-words text-sm leading-5 text-[#64748B]">
                     {member.address || t("members.noAddress")}
                   </p>
                 </div>
 
                 {/* Independent actions */}
-                <div className="relative z-10 flex items-center justify-end gap-4 pt-2">
+                <div className="relative z-10 flex flex-wrap items-center justify-end gap-2 border-t border-[#E2E8F0] pt-3">
                   {!contributingMemberIds.has(member.memberId) && (
                     <a
                       href={getWhatsAppUrl(member.phoneNumber)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`Message ${member.fullName} on WhatsApp`}
-                      title="Message on WhatsApp"
-                      className="inline-flex items-center justify-center rounded-md p-1 text-green-600 transition hover:bg-green-50 hover:text-green-700"
+                      aria-label={t("members.messageOnWhatsApp").replace(
+                        "{name}",
+                        member.fullName,
+                      )}
+                      title={t("members.messageOnWhatsApp").replace(
+                        "{name}",
+                        member.fullName,
+                      )}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#E2E8F0] bg-white text-emerald-700 transition-colors duration-200 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
                     >
                       <svg
                         viewBox="0 0 24 24"
-                        className="h-6 w-6"
+                        className="h-5 w-5"
                         fill="currentColor"
                         aria-hidden="true"
                       >
@@ -475,7 +508,7 @@ export default function MembersPage() {
                   )}
                   <Link
                     href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`}
-                    className="text-sm font-medium text-[#17365D] hover:underline"
+                    className="inline-flex min-h-9 items-center rounded-md px-3 text-sm font-medium text-[#17365D] transition-colors duration-200 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D]"
                   >
                     {t("members.editAction")}
                   </Link>
@@ -484,7 +517,7 @@ export default function MembersPage() {
                     type="button"
                     disabled={updateStatusMutation.isPending}
                     onClick={() => openStatusDialog(member)}
-                    className={`text-sm font-medium hover:underline disabled:opacity-50 ${
+                    className={`inline-flex min-h-9 items-center rounded-md px-3 text-sm font-medium transition-colors duration-200 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] disabled:opacity-50 ${
                       member.status === "Active"
                         ? "text-red-600"
                         : "text-green-700"
@@ -501,7 +534,7 @@ export default function MembersPage() {
         </div>
 
         {/* Pagination placeholder */}
-        <div className="flex items-center justify-between border-t border-[#E2E8F0] px-4 py-3 sm:px-5">
+        <div className="flex flex-col items-start gap-1 border-t border-[#E2E8F0] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <p className="text-xs text-[#64748B]">
             {t("members.showing").replace(
               "{count}",

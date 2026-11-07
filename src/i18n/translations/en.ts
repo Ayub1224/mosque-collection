@@ -52,6 +52,8 @@ const en = {
   },
   members: {
     title: "Members",
+      serialNumber: "Serial No.",
+      messageOnWhatsApp: "Message {name} on WhatsApp",
     search: "Search name or phone...",
     allStatus: "All Status",
     active: "Active",
@@ -103,7 +105,7 @@ const en = {
     showing: "Showing {count} members",
     paginationPlaceholder:
       "Pagination will be enabled when member data is connected.",
-    viewDetails: "View details for {name}",
+      viewDetails: "View details for {name}",
     idPrefix: "ID:",
     updated: "Status updated",
     unableUpdate: "Unable to update status",
