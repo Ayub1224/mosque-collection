@@ -166,7 +166,7 @@ export default function AddCollectionForm({
                   </div>
 
                   <p className="mt-1 text-xs text-[#64748B]">
-                    {member.memberId} · {member.phoneNumber}
+                    Serial No. {member.serialNo} · {member.phoneNumber}
                   </p>
                 </div>
               </div>

@@ -4,7 +4,7 @@ import "server-only";
 import { google } from "googleapis";
 
 export const MEMBERS_SHEET_NAME = "Members";
-export const MEMBERS_SHEET_RANGE = `${MEMBERS_SHEET_NAME}!A:H`;
+export const MEMBERS_SHEET_RANGE = `${MEMBERS_SHEET_NAME}!A:I`;
 export const COLLECTIONS_SHEET_NAME = "Collections";
 export const COLLECTIONS_SHEET_RANGE = `${COLLECTIONS_SHEET_NAME}!A:H`;
 export const ADMIN_PROFILES_SHEET_NAME = "AdminProfiles";

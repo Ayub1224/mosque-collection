@@ -105,9 +105,22 @@ export async function POST(request: Request) {
       const memberId = `MEM-${randomUUID()}`;
 
       // 6. Append the new member to Google Sheets.
-      await sheets.spreadsheets.values.append({
+      const validSerials = rows.slice(1).map((row) => String(row[8] ?? ""));
+      const highestSerial = validSerials.reduce((highest, serialNo) => {
+        return /^\d{3}$/.test(serialNo)
+          ? Math.max(highest, Number(serialNo))
+          : highest;
+      }, 0);
+
+      if (rows.length - 1 >= 999 || highestSerial >= 999) {
+        throw new Error("No 3-digit member serial numbers remain.");
+      }
+
+      // Google Sheets returns the actual row allocated by append, so concurrent
+      // serverless instances derive different serials without a process-local counter.
+      const appended = await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: MEMBERS_SHEET_RANGE,
+        range: "Members!A:H",
         valueInputOption: "RAW",
         insertDataOption: "INSERT_ROWS",
         requestBody: {
@@ -126,6 +139,19 @@ export async function POST(request: Request) {
         },
       });
 
+      const appendedRow = Number(/!(?:A)(\d+):/.exec(appended.data.updates?.updatedRange ?? "")?.[1]);
+      const nextSerial = Math.max(highestSerial, rows.length - 1) + (appendedRow - rows.length);
+      if (!Number.isInteger(appendedRow) || nextSerial < 1 || nextSerial > 999) {
+        throw new Error("Unable to allocate a valid member serial number.");
+      }
+      const serialNo = String(nextSerial).padStart(3, "0");
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `Members!I${appendedRow}`,
+        valueInputOption: "RAW",
+        requestBody: { values: [[serialNo]] },
+      });
+
       return {
         memberId,
         fullName: values.fullName,
@@ -135,6 +161,7 @@ export async function POST(request: Request) {
         status: "Active",
         createdAt: now,
         updatedAt: now,
+        serialNo,
       };
     });
 
@@ -204,6 +231,7 @@ export async function GET() {
       status: row[5] === "Inactive" ? "Inactive" : "Active",
       createdAt: String(row[6] ?? ""),
       updatedAt: String(row[7] ?? ""),
+      serialNo: String(row[8] ?? ""),
     }));
 
     return NextResponse.json({

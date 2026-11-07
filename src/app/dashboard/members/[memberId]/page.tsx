@@ -147,7 +147,7 @@ export default function MemberDetailsPage() {
               </h1>
 
               <p className="mt-1 text-xs text-[#64748B]">
-                Member ID: {member.memberId}
+                Serial No.: {member.serialNo}
               </p>
 
               <span
