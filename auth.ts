@@ -20,7 +20,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   session: {
     strategy: "jwt",
-    maxAge: 8 * 60 * 60, // 8 hours
+    // Auth.js refreshes the JWT cookie expiry when a valid session is read,
+    // giving active users a rolling 10-day session window.
+    maxAge: 10 * 24 * 60 * 60,
   },
 
   callbacks: {
