@@ -191,7 +191,7 @@ export default function MembersPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-[#F8FAFC] text-xs text-[#64748B]">
               <tr>
-                <th className="px-5 py-4 font-medium">{t("members.memberId")}</th>
+                <th className="px-5 py-4 font-medium">Serial No.</th>
                 <th className="px-5 py-4 font-medium">{t("members.name")}</th>
                 <th className="px-5 py-4 font-medium">{t("members.phone")}</th>
                 <th className="px-5 py-4 font-medium">{t("members.address")}</th>
@@ -205,7 +205,7 @@ export default function MembersPage() {
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-5 py-16 text-center text-[#64748B]"
                   >
                     {t("members.loadingMembers")}
@@ -214,7 +214,7 @@ export default function MembersPage() {
               ) : isError ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-5 py-16 text-center text-red-600"
                   >
                     {error instanceof Error
@@ -224,7 +224,7 @@ export default function MembersPage() {
                 </tr>
               ) : filteredMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-16 text-center">
+                  <td colSpan={8} className="px-5 py-16 text-center">
                     <p className="text-sm font-medium text-[#172B4D]">
                       {t("members.noResults")}
                     </p>
@@ -239,7 +239,7 @@ export default function MembersPage() {
                     key={member.memberId}
                     className="border-t border-[#E2E8F0]"
                   >
-                    <td className="px-5 py-4">{member.memberId}</td>
+                    <td className="px-5 py-4">{member.serialNo}</td>
                     <td className="px-5 py-4">
                       <Link
                         href={`/dashboard/members/${encodeURIComponent(member.memberId)}`}
@@ -328,6 +328,7 @@ export default function MembersPage() {
                     <p className="font-semibold text-[#172B4D]">
                       {member.fullName}
                     </p>
+                    <span className="text-sm font-medium text-[#64748B]">Serial No. {member.serialNo}</span>
 
                     <span className="text-xs text-[#64748B]">
                       {member.status === "Active" ? t("members.active") : t("members.inactive")}
@@ -340,9 +341,6 @@ export default function MembersPage() {
                     {member.address || t("members.noAddress")}
                   </p>
 
-                  <p className="text-xs text-[#94A3B8]">
-                    {t("members.idPrefix")} {member.memberId}
-                  </p>
                 </div>
 
                 {/* Independent actions */}

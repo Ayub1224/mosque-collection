@@ -104,7 +104,21 @@ export async function POST(request: Request) {
       const now = new Date().toISOString();
       const memberId = `MEM-${randomUUID()}`;
 
-      // 6. Append the new member to Google Sheets.
+      // 6. Allocate the next serial without reusing numbers held by inactive members.
+      const validSerials = rows.slice(1).map((row) => String(row[8] ?? ""));
+      const highestSerial = validSerials.reduce((highest, serialNo) => {
+        return /^\d{3}$/.test(serialNo)
+          ? Math.max(highest, Number(serialNo))
+          : highest;
+      }, 0);
+
+      if (rows.length - 1 >= 999 || highestSerial >= 999) {
+        throw new Error("No 3-digit member serial numbers remain.");
+      }
+
+      const serialNo = (highestSerial + 1).toString().padStart(3, "0");
+
+      // Append all nine columns together; RAW preserves serialNo as a string (e.g. "001").
       await sheets.spreadsheets.values.append({
         spreadsheetId,
         range: MEMBERS_SHEET_RANGE,
@@ -121,6 +135,7 @@ export async function POST(request: Request) {
               "Active",
               now,
               now,
+              serialNo,
             ],
           ],
         },
@@ -135,6 +150,7 @@ export async function POST(request: Request) {
         status: "Active",
         createdAt: now,
         updatedAt: now,
+        serialNo,
       };
     });
 
@@ -204,6 +220,7 @@ export async function GET() {
       status: row[5] === "Inactive" ? "Inactive" : "Active",
       createdAt: String(row[6] ?? ""),
       updatedAt: String(row[7] ?? ""),
+      serialNo: String(row[8] ?? ""),
     }));
 
     return NextResponse.json({

@@ -27,6 +27,7 @@ function mapMember(row: string[]): Member {
     status: row[5] === "Inactive" ? "Inactive" : "Active",
     createdAt: String(row[6] ?? ""),
     updatedAt: String(row[7] ?? ""),
+    serialNo: String(row[8] ?? ""),
   };
 }
 
@@ -170,11 +171,12 @@ export async function PATCH(
       status: existingRow[5] === "Inactive" ? "Inactive" : "Active",
       createdAt: String(existingRow[6] ?? ""),
       updatedAt: now,
+      serialNo: String(existingRow[8] ?? ""),
     };
 
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `Members!A${rowNumber}:H${rowNumber}`,
+      range: `Members!A${rowNumber}:I${rowNumber}`,
       valueInputOption: "RAW",
       requestBody: {
         values: [[
@@ -186,6 +188,7 @@ export async function PATCH(
           updatedMember.status,
           updatedMember.createdAt,
           updatedMember.updatedAt,
+          updatedMember.serialNo,
         ]],
       },
     });

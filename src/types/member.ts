@@ -9,6 +9,7 @@ export interface Member {
   status: MemberStatus;
   createdAt: string;
   updatedAt: string;
+  serialNo: string;
 }
 
 export interface CreateMemberInput {
