@@ -9,6 +9,7 @@ import { SiWhatsapp } from "react-icons/si";
 
 import WhatsAppReminderDialog from "../../collections/components/whatsapp-reminder-dialog";
 import { useCollections } from "@/hooks/collections/useCollections";
+import DonationDetailsDrawer from "@/app/dashboard/components/donation-details-drawer";
 
 const MONTHS = [
   { month: 4, label: "Apr" },
@@ -55,6 +56,12 @@ export default function MemberDetailsPage() {
     year: number;
   } | null>(null);
 
+  const [selectedMonth, setSelectedMonth] = useState<{
+    month: number;
+    year: number;
+    label: string;
+  } | null>(null);
+
   const { data: member, isLoading, isError, error } = useMember(memberId);
 
   const {
@@ -62,6 +69,22 @@ export default function MemberDetailsPage() {
     isLoading: collectionsLoading,
     isError: collectionsError,
   } = useCollections();
+
+  const selectedDonations = useMemo(() => {
+    if (!selectedMonth) return [];
+
+    return collections.filter((collection) => {
+      const [donationYear, donationMonth] = collection.donationDate
+        .split("-")
+        .map(Number);
+
+      return (
+        collection.memberId === memberId &&
+        donationYear === selectedMonth.year &&
+        donationMonth === selectedMonth.month
+      );
+    });
+  }, [collections, memberId, selectedMonth]);
 
   const today = new Date();
   const currentYear = today.getFullYear();
@@ -243,13 +266,24 @@ export default function MemberDetailsPage() {
                   className="group rounded-xl border border-[#E2E8F0] bg-white p-3 transition-colors hover:border-[#CBD5E1]"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedMonth({
+                          month: item.month,
+                          year: item.year,
+                          label: item.label,
+                        })
+                      }
+                      aria-label={`View ${item.label} ${item.year} donations for ${member.fullName}`}
+                      className="min-w-0 flex-1 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] focus-visible:ring-offset-2 rounded-md"
+                    >
                       <p className="text-xs text-[#64748B]">{item.label}</p>
 
                       <p className="mt-1 text-sm font-semibold text-[#172B4D]">
                         {item.total > 0 ? formatCurrency(item.total) : "—"}
                       </p>
-                    </div>
+                    </button>
 
                     {canSendReminder && (
                       <button
@@ -274,6 +308,16 @@ export default function MemberDetailsPage() {
           </div>
         )}
       </div>
+
+      {selectedMonth && (
+        <DonationDetailsDrawer
+          key={`${memberId}-${selectedMonth.year}-${selectedMonth.month}`}
+          memberName={member.fullName}
+          monthLabel={`${selectedMonth.label} ${selectedMonth.year}`}
+          donations={selectedDonations}
+          onClose={() => setSelectedMonth(null)}
+        />
+      )}
       {selectedReminder && (
         <WhatsAppReminderDialog
           open={true}
