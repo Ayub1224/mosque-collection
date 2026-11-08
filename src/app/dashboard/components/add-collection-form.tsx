@@ -26,7 +26,7 @@ export default function AddCollectionForm({
   const { t, language } = useLanguage();
   const createCollectionMutation = useCreateCollection();
   const [submitError, setSubmitError] = useState("");
-  const [savedCollection, setSavedCollection] = useState<Collection | null>(
+  const [savedCollections, setSavedCollections] = useState<Collection[] | null>(
     null,
   );
 
@@ -46,6 +46,7 @@ export default function AddCollectionForm({
       amount: 0,
       donationDate: new Date().toLocaleDateString("en-CA"),
       note: "",
+      isYearlyPayment: false,
     },
   });
 
@@ -57,11 +58,10 @@ export default function AddCollectionForm({
         ...values,
         memberId: member.memberId,
       });
-
-      const createdCollection =
+      const createdCollections =
         await createCollectionMutation.mutateAsync(validatedValues);
 
-      setSavedCollection(createdCollection);
+      setSavedCollections(createdCollections);
     } catch (error) {
       console.error("Failed to create collection:", error);
 
@@ -74,6 +74,7 @@ export default function AddCollectionForm({
   };
 
   const amountValue = watch("amount");
+  const isYearlyPayment = watch("isYearlyPayment");
 
   const initials = member.fullName
     .split(" ")
@@ -82,10 +83,10 @@ export default function AddCollectionForm({
     .join("")
     .toUpperCase();
 
-  if (savedCollection) {
+  if (savedCollections) {
     return (
       <CollectionSuccessDialog
-        collection={savedCollection}
+        collections={savedCollections}
         member={member}
         onAddAnother={() => {
           reset({
@@ -96,7 +97,7 @@ export default function AddCollectionForm({
           });
 
           setSubmitError("");
-          setSavedCollection(null);
+          setSavedCollections(null);
         }}
         onDone={onClose}
       />
@@ -188,7 +189,8 @@ export default function AddCollectionForm({
                   htmlFor="collection-amount"
                   className="text-sm font-medium text-[#172B4D]"
                 >
-                  {t("collection.contributionAmount")} <span className="text-red-500">*</span>
+                  {t("collection.contributionAmount")}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
 
                 <span className="text-[10px] font-medium uppercase tracking-wider text-[#94A3B8]">
@@ -233,7 +235,10 @@ export default function AddCollectionForm({
                     }
                     className="rounded-full bg-[#F5F7FA] px-3 py-1.5 text-xs font-medium text-[#17365D] transition hover:bg-[#E8EEF5]"
                   >
-                    + ₹{value.toLocaleString(language === "hi" ? "hi-IN" : "en-IN")}
+                    + ₹
+                    {value.toLocaleString(
+                      language === "hi" ? "hi-IN" : "en-IN",
+                    )}
                   </button>
                 ))}
               </div>
@@ -243,13 +248,57 @@ export default function AddCollectionForm({
               </p>
             </div>
 
+            {/* Yearly Payment */}
+            <div className="rounded-lg border border-[#E2E8F0] p-4">
+              <label className="flex cursor-pointer items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[#172B4D]">
+                    {t("collection.payYearly")}
+                  </p>
+                  <p className="mt-1 text-xs text-[#64748B]">
+                    {t("collection.payYearlyDescription")}
+                  </p>
+                </div>
+
+                <input
+                  type="checkbox"
+                  {...register("isYearlyPayment")}
+                  className="h-4 w-4 shrink-0 accent-[#102744]"
+                />
+              </label>
+
+              {isYearlyPayment && (
+                <div className="mt-3 rounded-lg bg-[#F5F7FA] p-3">
+                  <p className="text-xs text-[#64748B]">
+                    {t("collection.monthlyAllocation")}
+                  </p>
+                  <p className="mt-1 text-lg font-semibold text-[#102744]">
+                    ₹
+                    {Number(amountValue) > 0 &&
+                    Number.isInteger(Number(amountValue))
+                      ? (Number(amountValue) / 12).toLocaleString(
+                          language === "hi" ? "hi-IN" : "en-IN",
+                        )
+                      : "—"}
+                    <span className="ml-1 text-xs font-normal text-[#64748B]">
+                      / {t("collection.month")}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-xs text-[#64748B]">
+                    {t("collection.yearlyPaymentHint")}
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Donation Date */}
             <div className="space-y-2">
               <label
                 htmlFor="collection-date"
                 className="block text-sm font-medium text-[#172B4D]"
               >
-                {t("collection.received")} <span className="text-red-500">*</span>
+                {t("collection.received")}{" "}
+                <span className="text-red-500">*</span>
               </label>
 
               <input
@@ -271,7 +320,10 @@ export default function AddCollectionForm({
                 htmlFor="collection-note"
                 className="block text-sm font-medium text-[#172B4D]"
               >
-                {t("collection.note")} <span className="font-normal text-[#94A3B8]">{t("collection.optional")}</span>
+                {t("collection.note")}{" "}
+                <span className="font-normal text-[#94A3B8]">
+                  {t("collection.optional")}
+                </span>
               </label>
 
               <textarea

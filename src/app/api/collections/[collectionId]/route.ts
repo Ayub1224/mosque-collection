@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth, isAdminEmail } from "@/auth";
@@ -25,8 +24,7 @@ async function findCollectionRow(collectionId: string) {
 
   const rows = response.data.values ?? [];
   const rowIndex = rows.findIndex(
-    (row, index) =>
-      index > 0 && String(row[0] ?? "") === collectionId,
+    (row, index) => index > 0 && String(row[0] ?? "") === collectionId,
   );
 
   if (rowIndex === -1) {
@@ -44,6 +42,9 @@ async function findCollectionRow(collectionId: string) {
     note: String(row[5] ?? ""),
     createdAt: String(row[6] ?? ""),
     updatedAt: String(row[7] ?? ""),
+    paymentType: row[8] === "Yearly" ? "Yearly" : "Monthly",
+    paymentGroupId: String(row[9] ?? ""),
+    paymentReceivedDate: String(row[10] ?? String(row[3] ?? "")),
   };
 
   return {
@@ -54,10 +55,7 @@ async function findCollectionRow(collectionId: string) {
   };
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: RouteContext,
-) {
+export async function PATCH(request: Request, { params }: RouteContext) {
   try {
     const session = await auth();
 
@@ -107,19 +105,24 @@ export async function PATCH(
 
     await result.sheets.spreadsheets.values.update({
       spreadsheetId: result.spreadsheetId,
-      range: `Collections!A${result.rowNumber}:H${result.rowNumber}`,
+      range: `Collections!A${result.rowNumber}:K${result.rowNumber}`,
       valueInputOption: "RAW",
       requestBody: {
-        values: [[
-          updatedCollection.collectionId,
-          updatedCollection.memberId,
-          updatedCollection.amount,
-          updatedCollection.donationDate,
-          updatedCollection.recordStatus,
-          updatedCollection.note,
-          updatedCollection.createdAt,
-          updatedCollection.updatedAt,
-        ]],
+        values: [
+          [
+            updatedCollection.collectionId,
+            updatedCollection.memberId,
+            updatedCollection.amount,
+            updatedCollection.donationDate,
+            updatedCollection.recordStatus,
+            updatedCollection.note,
+            updatedCollection.createdAt,
+            updatedCollection.updatedAt,
+            updatedCollection.paymentType,
+            updatedCollection.paymentGroupId,
+            updatedCollection.paymentReceivedDate,
+          ],
+        ],
       },
     });
 
@@ -138,10 +141,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: RouteContext,
-) {
+export async function DELETE(_request: Request, { params }: RouteContext) {
   try {
     const session = await auth();
 
@@ -179,19 +179,24 @@ export async function DELETE(
 
     await result.sheets.spreadsheets.values.update({
       spreadsheetId: result.spreadsheetId,
-      range: `Collections!A${result.rowNumber}:H${result.rowNumber}`,
+      range: `Collections!A${result.rowNumber}:K${result.rowNumber}`,
       valueInputOption: "RAW",
       requestBody: {
-        values: [[
-          cancelledCollection.collectionId,
-          cancelledCollection.memberId,
-          cancelledCollection.amount,
-          cancelledCollection.donationDate,
-          cancelledCollection.recordStatus,
-          cancelledCollection.note,
-          cancelledCollection.createdAt,
-          cancelledCollection.updatedAt,
-        ]],
+        values: [
+          [
+            cancelledCollection.collectionId,
+            cancelledCollection.memberId,
+            cancelledCollection.amount,
+            cancelledCollection.donationDate,
+            cancelledCollection.recordStatus,
+            cancelledCollection.note,
+            cancelledCollection.createdAt,
+            cancelledCollection.updatedAt,
+            cancelledCollection.paymentType,
+            cancelledCollection.paymentGroupId,
+            cancelledCollection.paymentReceivedDate,
+          ],
+        ],
       },
     });
 

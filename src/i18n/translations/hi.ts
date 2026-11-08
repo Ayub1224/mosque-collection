@@ -196,6 +196,13 @@ const hi: { [K in keyof typeof en]: { [P in keyof (typeof en)[K]]: string } } =
       noContributionMonth: "इस महीने कोई सक्रिय योगदान नहीं",
       unableSummary: "संग्रह सारांश लोड नहीं हो सका।",
       pleaseTryAgain: "कृपया फिर प्रयास करें।",
+      payYearly: "वार्षिक भुगतान",
+      payYearlyDescription: "पूरे वित्तीय वर्ष के लिए एक भुगतान दर्ज करें।",
+      monthlyAllocation: "मासिक आवंटन",
+      yearlyPaymentHint: "राशि अप्रैल से मार्च तक समान रूप से बाँटी जाएगी।",
+      yearlyTotal: "वार्षिक भुगतान",
+      monthlyAmount: "मासिक राशि",
+      allocationPeriod: "आवंटन अवधि",
     },
     profile: {
       title: "प्रशासक प्रोफ़ाइल",

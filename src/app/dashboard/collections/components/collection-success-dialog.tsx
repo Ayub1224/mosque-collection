@@ -4,27 +4,47 @@
 import { Check, Plus } from "lucide-react";
 import type { Collection } from "@/types/collection";
 import type { Member } from "@/types/member";
+import { useLanguage } from "../../components/admin-profile-context";
 
 interface CollectionSuccessDialogProps {
-  collection: Collection;
+  collections: Collection[];
   member: Member;
   onAddAnother: () => void;
   onDone: () => void;
 }
 
 export default function CollectionSuccessDialog({
-  collection,
+  collections,
   member,
   onAddAnother,
   onDone,
 }: CollectionSuccessDialogProps) {
-  const formattedDate = new Date(
-    `${collection.donationDate}T00:00:00`,
-  ).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const { t, language } = useLanguage();
+
+  const collection = collections[0];
+  const isYearly = collection.paymentType === "Yearly";
+
+  const totalAmount = collections.reduce(
+    (total, item) => total + item.amount,
+    0,
+  );
+
+  const formatDate = (date: string) =>
+    new Date(`${date}T00:00:00`).toLocaleDateString(
+      language === "hi" ? "hi-IN" : "en-IN",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      },
+    );
+
+  const receivedDate = formatDate(collection.paymentReceivedDate);
+
+  const allocationStart = formatDate(collections[0].donationDate);
+  const allocationEnd = formatDate(
+    collections[collections.length - 1].donationDate,
+  );
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#102744]/45 p-3 backdrop-blur-sm sm:p-5">
@@ -34,7 +54,6 @@ export default function CollectionSuccessDialog({
         aria-labelledby="collection-success-title"
         className="flex max-h-[90vh] w-full max-w-[540px] flex-col overflow-y-auto rounded-xl bg-white shadow-2xl"
       >
-        {/* Success heading */}
         <div className="flex flex-col items-center px-6 pb-5 pt-7 text-center">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-green-100">
@@ -54,21 +73,21 @@ export default function CollectionSuccessDialog({
           </h2>
 
           <p className="mt-2 max-w-sm text-sm text-[#64748B]">
-            The contribution has been saved successfully.
+            {isYearly
+              ? "The yearly contribution and all 12 monthly allocations have been saved."
+              : "The contribution has been saved successfully."}
           </p>
         </div>
 
-        {/* Collection receipt details */}
         <div className="mx-5 mb-5 rounded-xl bg-[#F5F7FA] p-4 sm:mx-6 sm:p-5">
-          {/* Reference */}
           <div className="mb-4 flex items-center justify-between gap-3 border-b border-[#E2E8F0] pb-4">
             <div className="min-w-0">
               <p className="text-[10px] font-medium uppercase tracking-wider text-[#64748B]">
-                Receipt Reference
+                {isYearly ? "Payment Group Reference" : "Receipt Reference"}
               </p>
 
               <p className="mt-1 break-all font-mono text-sm font-semibold text-[#102744]">
-                {collection.collectionId}
+                {isYearly ? collection.paymentGroupId : collection.collectionId}
               </p>
             </div>
 
@@ -77,18 +96,45 @@ export default function CollectionSuccessDialog({
             </span>
           </div>
 
-          {/* Amount */}
           <div className="mb-4 flex items-center justify-between gap-3">
             <span className="text-sm text-[#64748B]">
-              Contribution Amount
+              {isYearly ? t("collection.yearlyTotal") : "Contribution Amount"}
             </span>
 
             <span className="text-2xl font-bold tracking-tight text-[#102744]">
-              ₹{collection.amount.toLocaleString("en-IN")}
+              ₹{totalAmount.toLocaleString(language === "hi" ? "hi-IN" : "en-IN")}
             </span>
           </div>
 
-          {/* Member and collection information */}
+          {isYearly && (
+            <div className="mb-4 space-y-3 rounded-lg bg-white p-4">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-[#64748B]">
+                  {t("collection.monthlyAmount")}
+                </span>
+                <span className="text-sm font-semibold text-[#172B4D]">
+                  ₹{collection.amount.toLocaleString(language === "hi" ? "hi-IN" : "en-IN")}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-[#64748B]">
+                  {t("collection.allocationPeriod")}
+                </span>
+                <span className="text-right text-sm font-medium text-[#172B4D]">
+                  {allocationStart} – {allocationEnd}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-[#64748B]">Allocations</span>
+                <span className="text-sm font-medium text-[#172B4D]">
+                  {collections.length} months
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3 rounded-lg bg-white p-4">
             <div className="flex items-start justify-between gap-3">
               <span className="text-sm text-[#64748B]">Member</span>
@@ -113,7 +159,7 @@ export default function CollectionSuccessDialog({
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm text-[#64748B]">Date Received</span>
               <span className="text-sm font-medium text-[#172B4D]">
-                {formattedDate}
+                {receivedDate}
               </span>
             </div>
 
@@ -128,7 +174,6 @@ export default function CollectionSuccessDialog({
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex flex-col gap-3 border-t border-[#E2E8F0] px-5 py-4 sm:flex-row sm:px-6">
           <button
             type="button"

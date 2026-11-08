@@ -1,9 +1,21 @@
-
 import type {
   Collection,
   CreateCollectionInput,
   UpdateCollectionInput,
 } from "@/types/collection";
+
+type CreateCollectionResponse =
+  | {
+      success: true;
+      message: string;
+      collection: Collection;
+      collections?: Collection[];
+    }
+  | {
+      success: false;
+      message: string;
+      errors?: unknown;
+    };
 
 type CollectionResponse =
   | {
@@ -43,7 +55,7 @@ export async function getCollections(): Promise<Collection[]> {
 
 export async function createCollection(
   input: CreateCollectionInput,
-): Promise<Collection> {
+): Promise<Collection[]> {
   const response = await fetch("/api/collections", {
     method: "POST",
     headers: {
@@ -52,13 +64,13 @@ export async function createCollection(
     body: JSON.stringify(input),
   });
 
-  const data: CollectionResponse = await response.json();
+  const data: CreateCollectionResponse = await response.json();
 
   if (!response.ok || !data.success) {
     throw new Error(data.message || "Unable to record collection.");
   }
 
-  return data.collection;
+  return data.collections ?? [data.collection];
 }
 
 export async function updateCollection(
