@@ -45,7 +45,7 @@ export default function AddCollectionForm({
       memberId: member.memberId,
       amount: 0,
       donationDate: new Date().toLocaleDateString("en-CA"),
-      note: "",
+      note: "Monthly donation",
       isYearlyPayment: false,
     },
   });
@@ -93,7 +93,8 @@ export default function AddCollectionForm({
             memberId: member.memberId,
             amount: 0,
             donationDate: new Date().toLocaleDateString("en-CA"),
-            note: "",
+            note: "Monthly donation",
+            isYearlyPayment: false,
           });
 
           setSubmitError("");
@@ -110,13 +111,13 @@ export default function AddCollectionForm({
         role="dialog"
         aria-modal="true"
         aria-labelledby="add-collection-form-title"
-        className="flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
+        className="flex h-[90dvh] max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
       >
         {/* Decorative accent */}
         <div className="h-1.5 w-full bg-[#102744]" />
 
         {/* Header */}
-        <div className="flex items-start justify-between px-5 pb-3 pt-5 sm:px-6">
+        <div className="flex shrink-0 items-start justify-between px-5 pb-3 pt-5 sm:px-6">
           <div>
             <h2
               id="add-collection-form-title"
@@ -139,9 +140,12 @@ export default function AddCollectionForm({
             <X size={20} />
           </button>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
+        >
           {/* Form content */}
-          <div className="space-y-5 overflow-y-auto px-5 py-4 sm:px-6">
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-4 sm:px-6">
             {/* Selected member */}
             <div className="flex items-center justify-between gap-3 rounded-lg bg-[#F5F7FA] p-4">
               <div className="flex min-w-0 items-center gap-3">
@@ -262,7 +266,26 @@ export default function AddCollectionForm({
 
                 <input
                   type="checkbox"
-                  {...register("isYearlyPayment")}
+                  {...register("isYearlyPayment", {
+                    onChange: (event) => {
+                      const currentNote = watch("note");
+
+                      // Update only the default note, preserving custom notes.
+                      if (
+                        !currentNote ||
+                        currentNote === "Monthly donation" ||
+                        currentNote === "Yearly donation"
+                      ) {
+                        setValue(
+                          "note",
+                          event.target.checked
+                            ? "Yearly donation"
+                            : "Monthly donation",
+                          { shouldDirty: true },
+                        );
+                      }
+                    },
+                  })}
                   className="h-4 w-4 shrink-0 accent-[#102744]"
                 />
               </label>
@@ -343,7 +366,7 @@ export default function AddCollectionForm({
           )}
 
           {/* Footer */}
-          <div className="flex flex-col-reverse gap-3 border-t border-[#E2E8F0] bg-[#F8FAFC] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-[#E2E8F0] bg-[#F8FAFC] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
             <button
               type="button"
               onClick={onClose}

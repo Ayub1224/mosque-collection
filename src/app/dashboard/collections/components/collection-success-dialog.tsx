@@ -178,7 +178,7 @@ export default function CollectionSuccessDialog({
           <button
             type="button"
             onClick={onAddAnother}
-            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#102744] px-4 text-sm font-semibold text-white transition hover:bg-[#17365D]"
+            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#102744] p-4 text-sm font-semibold text-white transition hover:bg-[#17365D]"
           >
             <Plus size={17} />
             Add Another Collection
