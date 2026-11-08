@@ -23,6 +23,7 @@ export default function AddMemberPage() {
     handleSubmit,
     setValue,
     setError,
+    reset,
     formState: { errors },
   } = useForm<MemberFormValues>({
     resolver: zodResolver(memberSchema),
@@ -46,6 +47,12 @@ export default function AddMemberPage() {
 
     try {
       const newMember = await createMemberMutation.mutateAsync(values);
+      reset({
+        fullName: "",
+        phoneNumber: "",
+        address: "",
+        joiningDate: today,
+      });
 
       const returnToCollection =
         new URLSearchParams(window.location.search).get("returnTo") ===
@@ -220,7 +227,10 @@ export default function AddMemberPage() {
               htmlFor="address"
               className="mb-2 block text-xs font-medium text-[#172B4D]"
             >
-              {t("members.address")} <span className="font-normal text-[#64748B]">{t("members.optional")}</span>
+              {t("members.address")}{" "}
+              <span className="font-normal text-[#64748B]">
+                {t("members.optional")}
+              </span>
             </label>
 
             <textarea
@@ -263,7 +273,9 @@ export default function AddMemberPage() {
             disabled={createMemberMutation.isPending || !today}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-[#102744] px-5 text-sm font-medium text-white transition hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {createMemberMutation.isPending ? t("members.saving") : t("members.save")}
+            {createMemberMutation.isPending
+              ? t("members.saving")
+              : t("members.save")}
           </button>
         </div>
       </form>
