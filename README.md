@@ -178,7 +178,7 @@ The application currently reads and writes the `Members`, `Collections`, and `Ad
    This becomes `GOOGLE_SERVICE_ACCOUNT_EMAIL`.
 5. Open the service account's **Keys** tab.
 6. Select **Add Key → Create new key → JSON** and download the key file.
-7. Keep this JSON file private. Do not upload it to GitHub, add it to the project, or share it publicly.
+7. Keep this JSON file private. Do not upload it to GitHub, add it to the project, or share it publicly. Google does not let you download the same private key again later, so store it in a secure password manager or secrets vault. If it is lost or exposed, create a replacement key, update the deployment secret, and delete the old key.
 8. Open your spreadsheet, click **Share**, and share it with the service-account email address.
 9. Give the service account **Editor** access to this spreadsheet.
 
@@ -434,6 +434,14 @@ Contributions are welcome.
 5. Open a pull request describing the change and the tests performed.
 
 Please do not include credentials, private spreadsheet links, or real member data in issues or pull requests.
+
+## Useful official documentation
+
+- [Google Sheets API: Node.js quickstart](https://developers.google.com/workspace/sheets/api/quickstart/nodejs)
+- [Google OAuth 2.0 for web server applications](https://developers.google.com/identity/protocols/oauth2/web-server)
+- [Create Google Cloud service accounts](https://cloud.google.com/iam/docs/service-accounts-create)
+- [Create and delete service-account keys](https://cloud.google.com/iam/docs/keys-create-delete)
+- [Deploy Next.js on Netlify](https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/)
 
 ## License
 
