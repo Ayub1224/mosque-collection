@@ -66,7 +66,7 @@ export async function GET() {
 
     const sourceRows: LegacyCollectionRow[] = collectionRows
       .slice(1)
-      .map((row, index) => {
+      .map((row, index): LegacyCollectionRow => {
         const memberId = String(row[1] ?? "");
         const donationDate = String(row[3] ?? "");
 
