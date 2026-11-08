@@ -26,7 +26,7 @@ export default function AddCollectionForm({
   const { t, language } = useLanguage();
   const createCollectionMutation = useCreateCollection();
   const [submitError, setSubmitError] = useState("");
-  const [savedCollection, setSavedCollection] = useState<Collection | null>(
+  const [savedCollections, setSavedCollections] = useState<Collection[] | null>(
     null,
   );
 
@@ -45,7 +45,8 @@ export default function AddCollectionForm({
       memberId: member.memberId,
       amount: 0,
       donationDate: new Date().toLocaleDateString("en-CA"),
-      note: "",
+      note: "Monthly donation",
+      isYearlyPayment: false,
     },
   });
 
@@ -57,11 +58,10 @@ export default function AddCollectionForm({
         ...values,
         memberId: member.memberId,
       });
-
-      const createdCollection =
+      const createdCollections =
         await createCollectionMutation.mutateAsync(validatedValues);
 
-      setSavedCollection(createdCollection);
+      setSavedCollections(createdCollections);
     } catch (error) {
       console.error("Failed to create collection:", error);
 
@@ -74,6 +74,7 @@ export default function AddCollectionForm({
   };
 
   const amountValue = watch("amount");
+  const isYearlyPayment = watch("isYearlyPayment");
 
   const initials = member.fullName
     .split(" ")
@@ -82,21 +83,22 @@ export default function AddCollectionForm({
     .join("")
     .toUpperCase();
 
-  if (savedCollection) {
+  if (savedCollections) {
     return (
       <CollectionSuccessDialog
-        collection={savedCollection}
+        collections={savedCollections}
         member={member}
         onAddAnother={() => {
           reset({
             memberId: member.memberId,
             amount: 0,
             donationDate: new Date().toLocaleDateString("en-CA"),
-            note: "",
+            note: "Monthly donation",
+            isYearlyPayment: false,
           });
 
           setSubmitError("");
-          setSavedCollection(null);
+          setSavedCollections(null);
         }}
         onDone={onClose}
       />
@@ -109,13 +111,13 @@ export default function AddCollectionForm({
         role="dialog"
         aria-modal="true"
         aria-labelledby="add-collection-form-title"
-        className="flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
+        className="flex h-[90dvh] max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
       >
         {/* Decorative accent */}
         <div className="h-1.5 w-full bg-[#102744]" />
 
         {/* Header */}
-        <div className="flex items-start justify-between px-5 pb-3 pt-5 sm:px-6">
+        <div className="flex shrink-0 items-start justify-between px-5 pb-3 pt-5 sm:px-6">
           <div>
             <h2
               id="add-collection-form-title"
@@ -138,9 +140,12 @@ export default function AddCollectionForm({
             <X size={20} />
           </button>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
+        >
           {/* Form content */}
-          <div className="space-y-5 overflow-y-auto px-5 py-4 sm:px-6">
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-4 sm:px-6">
             {/* Selected member */}
             <div className="flex items-center justify-between gap-3 rounded-lg bg-[#F5F7FA] p-4">
               <div className="flex min-w-0 items-center gap-3">
@@ -188,7 +193,8 @@ export default function AddCollectionForm({
                   htmlFor="collection-amount"
                   className="text-sm font-medium text-[#172B4D]"
                 >
-                  {t("collection.contributionAmount")} <span className="text-red-500">*</span>
+                  {t("collection.contributionAmount")}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
 
                 <span className="text-[10px] font-medium uppercase tracking-wider text-[#94A3B8]">
@@ -233,7 +239,10 @@ export default function AddCollectionForm({
                     }
                     className="rounded-full bg-[#F5F7FA] px-3 py-1.5 text-xs font-medium text-[#17365D] transition hover:bg-[#E8EEF5]"
                   >
-                    + ₹{value.toLocaleString(language === "hi" ? "hi-IN" : "en-IN")}
+                    + ₹
+                    {value.toLocaleString(
+                      language === "hi" ? "hi-IN" : "en-IN",
+                    )}
                   </button>
                 ))}
               </div>
@@ -243,13 +252,76 @@ export default function AddCollectionForm({
               </p>
             </div>
 
+            {/* Yearly Payment */}
+            <div className="rounded-lg border border-[#E2E8F0] p-4">
+              <label className="flex cursor-pointer items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[#172B4D]">
+                    {t("collection.payYearly")}
+                  </p>
+                  <p className="mt-1 text-xs text-[#64748B]">
+                    {t("collection.payYearlyDescription")}
+                  </p>
+                </div>
+
+                <input
+                  type="checkbox"
+                  {...register("isYearlyPayment", {
+                    onChange: (event) => {
+                      const currentNote = watch("note");
+
+                      // Update only the default note, preserving custom notes.
+                      if (
+                        !currentNote ||
+                        currentNote === "Monthly donation" ||
+                        currentNote === "Yearly donation"
+                      ) {
+                        setValue(
+                          "note",
+                          event.target.checked
+                            ? "Yearly donation"
+                            : "Monthly donation",
+                          { shouldDirty: true },
+                        );
+                      }
+                    },
+                  })}
+                  className="h-4 w-4 shrink-0 accent-[#102744]"
+                />
+              </label>
+
+              {isYearlyPayment && (
+                <div className="mt-3 rounded-lg bg-[#F5F7FA] p-3">
+                  <p className="text-xs text-[#64748B]">
+                    {t("collection.monthlyAllocation")}
+                  </p>
+                  <p className="mt-1 text-lg font-semibold text-[#102744]">
+                    ₹
+                    {Number(amountValue) > 0 &&
+                    Number.isInteger(Number(amountValue))
+                      ? (Number(amountValue) / 12).toLocaleString(
+                          language === "hi" ? "hi-IN" : "en-IN",
+                        )
+                      : "—"}
+                    <span className="ml-1 text-xs font-normal text-[#64748B]">
+                      / {t("collection.month")}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-xs text-[#64748B]">
+                    {t("collection.yearlyPaymentHint")}
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Donation Date */}
             <div className="space-y-2">
               <label
                 htmlFor="collection-date"
                 className="block text-sm font-medium text-[#172B4D]"
               >
-                {t("collection.received")} <span className="text-red-500">*</span>
+                {t("collection.received")}{" "}
+                <span className="text-red-500">*</span>
               </label>
 
               <input
@@ -271,7 +343,10 @@ export default function AddCollectionForm({
                 htmlFor="collection-note"
                 className="block text-sm font-medium text-[#172B4D]"
               >
-                {t("collection.note")} <span className="font-normal text-[#94A3B8]">{t("collection.optional")}</span>
+                {t("collection.note")}{" "}
+                <span className="font-normal text-[#94A3B8]">
+                  {t("collection.optional")}
+                </span>
               </label>
 
               <textarea
@@ -291,7 +366,7 @@ export default function AddCollectionForm({
           )}
 
           {/* Footer */}
-          <div className="flex flex-col-reverse gap-3 border-t border-[#E2E8F0] bg-[#F8FAFC] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-[#E2E8F0] bg-[#F8FAFC] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
             <button
               type="button"
               onClick={onClose}

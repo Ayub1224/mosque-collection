@@ -1,4 +1,6 @@
+
 export type CollectionRecordStatus = "Active" | "Cancelled";
+export type CollectionPaymentType = "Monthly" | "Yearly";
 
 export interface Collection {
   collectionId: string;
@@ -9,6 +11,9 @@ export interface Collection {
   note: string;
   createdAt: string;
   updatedAt: string;
+  paymentType: CollectionPaymentType;
+  paymentGroupId: string;
+  paymentReceivedDate: string;
 }
 
 export interface CreateCollectionInput {
@@ -16,6 +21,7 @@ export interface CreateCollectionInput {
   amount: number;
   donationDate: string;
   note?: string;
+  isYearlyPayment?: boolean;
 }
 
 export interface UpdateCollectionInput {

@@ -50,7 +50,7 @@ export default function CollectionsPage() {
         <button
           type="button"
           onClick={() => setIsAddCollectionOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#102744] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#17365D]"
+          className="inline-flex h-11 self-start items-center justify-center gap-2 rounded-xl bg-[#102744] px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#17365D] hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17365D] focus-visible:ring-offset-2 sm:self-auto"
         >
           <Plus size={18} />
           {t("collection.add")}

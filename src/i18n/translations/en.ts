@@ -194,6 +194,14 @@ const en = {
     noContributionMonth: "No active contribution this month",
     unableSummary: "Unable to load collection summary.",
     pleaseTryAgain: "Please try again.",
+    payYearly: "Pay Yearly",
+    payYearlyDescription: "Record one payment for the entire financial year.",
+    monthlyAllocation: "Monthly allocation",
+    yearlyPaymentHint:
+      "The amount will be divided equally across April to March.",
+    yearlyTotal: "Yearly payment",
+    monthlyAmount: "Monthly amount",
+    allocationPeriod: "Allocation period",
   },
   profile: {
     title: "Administrator profile",

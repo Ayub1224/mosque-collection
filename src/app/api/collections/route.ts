@@ -14,7 +14,6 @@ import type { Collection } from "@/types/collection";
 
 export async function GET() {
   try {
-    // 1. Verify administrator authentication.
     const session = await auth();
 
     if (!session?.user?.email || !isAdminEmail(session.user.email)) {
@@ -24,7 +23,6 @@ export async function GET() {
       );
     }
 
-    // 2. Fetch collection records from Google Sheets.
     const sheets = getGoogleSheetsClient();
     const spreadsheetId = getSpreadsheetId();
 
@@ -35,17 +33,23 @@ export async function GET() {
 
     const rows = response.data.values ?? [];
 
-    // 3. Convert spreadsheet rows into Collection objects.
-    const collections: Collection[] = rows.slice(1).map((row) => ({
-      collectionId: String(row[0] ?? ""),
-      memberId: String(row[1] ?? ""),
-      amount: Number(row[2] ?? 0),
-      donationDate: String(row[3] ?? ""),
-      recordStatus: row[4] === "Cancelled" ? "Cancelled" : "Active",
-      note: String(row[5] ?? ""),
-      createdAt: String(row[6] ?? ""),
-      updatedAt: String(row[7] ?? ""),
-    }));
+    const collections: Collection[] = rows.slice(1).map((row) => {
+      const donationDate = String(row[3] ?? "");
+
+      return {
+        collectionId: String(row[0] ?? ""),
+        memberId: String(row[1] ?? ""),
+        amount: Number(row[2] ?? 0),
+        donationDate,
+        recordStatus: row[4] === "Cancelled" ? "Cancelled" : "Active",
+        note: String(row[5] ?? ""),
+        createdAt: String(row[6] ?? ""),
+        updatedAt: String(row[7] ?? ""),
+        paymentType: row[8] === "Yearly" ? "Yearly" : "Monthly",
+        paymentGroupId: String(row[9] ?? ""),
+        paymentReceivedDate: String(row[10] ?? donationDate),
+      };
+    });
 
     return NextResponse.json({
       success: true,
@@ -66,7 +70,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    // 1. Verify administrator authentication.
     const session = await auth();
 
     if (!session?.user?.email || !isAdminEmail(session.user.email)) {
@@ -76,7 +79,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Validate request body.
     const body: unknown = await request.json();
     const validation = collectionSchema.safeParse(body);
 
@@ -96,8 +98,7 @@ export async function POST(request: Request) {
     const sheets = getGoogleSheetsClient();
     const spreadsheetId = getSpreadsheetId();
 
-    // 3. Verify that the selected member exists.
-    // Both Active and Inactive members are allowed.
+    // Verify that the selected member exists.
     const membersResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: MEMBERS_SHEET_RANGE,
@@ -119,48 +120,93 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Generate collection ID and timestamps.
     const now = new Date().toISOString();
-    const collectionId = `COL-${randomUUID()}`;
+    const isYearlyPayment = values.isYearlyPayment;
+    const paymentGroupId = isYearlyPayment
+      ? `PAY-${randomUUID()}`
+      : "";
 
-    const collection: Collection = {
-      collectionId,
-      memberId: values.memberId,
-      amount: values.amount,
-      donationDate: values.donationDate,
-      recordStatus: "Active",
-      note: values.note,
-      createdAt: now,
-      updatedAt: now,
-    };
+    let collections: Collection[];
 
-    // 5. Append collection record to Google Sheets.
+    if (isYearlyPayment) {
+      const [receivedYear, receivedMonth] = values.donationDate
+        .split("-")
+        .map(Number);
+
+      // Indian financial year: April to March.
+      const financialYearStart =
+        receivedMonth >= 4 ? receivedYear : receivedYear - 1;
+
+      collections = Array.from({ length: 12 }, (_, index) => {
+        const allocationDate = new Date(
+          Date.UTC(financialYearStart, 3 + index, 1),
+        )
+          .toISOString()
+          .slice(0, 10);
+
+        return {
+          collectionId: `COL-${randomUUID()}`,
+          memberId: values.memberId,
+          amount: values.amount / 12,
+          donationDate: allocationDate,
+          recordStatus: "Active",
+          note: values.note,
+          createdAt: now,
+          updatedAt: now,
+          paymentType: "Yearly",
+          paymentGroupId,
+          paymentReceivedDate: values.donationDate,
+        };
+      });
+    } else {
+      collections = [
+        {
+          collectionId: `COL-${randomUUID()}`,
+          memberId: values.memberId,
+          amount: values.amount,
+          donationDate: values.donationDate,
+          recordStatus: "Active",
+          note: values.note,
+          createdAt: now,
+          updatedAt: now,
+          paymentType: "Monthly",
+          paymentGroupId: "",
+          paymentReceivedDate: values.donationDate,
+        },
+      ];
+    }
+
+    // Append all records in one Google Sheets request.
     await sheets.spreadsheets.values.append({
       spreadsheetId,
       range: COLLECTIONS_SHEET_RANGE,
       valueInputOption: "RAW",
       insertDataOption: "INSERT_ROWS",
       requestBody: {
-        values: [
-          [
-            collection.collectionId,
-            collection.memberId,
-            collection.amount,
-            collection.donationDate,
-            collection.recordStatus,
-            collection.note,
-            collection.createdAt,
-            collection.updatedAt,
-          ],
-        ],
+        values: collections.map((collection) => [
+          collection.collectionId,
+          collection.memberId,
+          collection.amount,
+          collection.donationDate,
+          collection.recordStatus,
+          collection.note,
+          collection.createdAt,
+          collection.updatedAt,
+          collection.paymentType,
+          collection.paymentGroupId,
+          collection.paymentReceivedDate,
+        ]),
       },
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: "Collection recorded successfully.",
-        collection,
+        message: isYearlyPayment
+          ? "Yearly collection recorded successfully."
+          : "Collection recorded successfully.",
+        collection: collections[0],
+        collections,
       },
       { status: 201 },
     );
