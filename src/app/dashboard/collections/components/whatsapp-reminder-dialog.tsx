@@ -1,16 +1,9 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import {
-  Check,
-  Copy,
-  Download,
-  MessageCircle,
-  Share2,
-  X,
-} from "lucide-react";
+import { Check, Copy, Download, Share2, X } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
 
 import type { Member } from "@/types/member";
 import { buildMonthlyContributionMessage } from "@/lib/whatsapp/message-templates";
@@ -39,7 +32,7 @@ const MONTHS = [
   "December",
 ];
 
-const QR_CODE_PATH = "/contribution-qr.jpeg";
+const QR_CODE_PATH = "/contribution-qr.png";
 
 type ShareStatus = "idle" | "sharing" | "completed" | "unsupported" | "error";
 
@@ -93,20 +86,16 @@ export default function WhatsAppReminderDialog({
           throw new Error("Invalid QR code image.");
         }
 
-        const file = new File(
-          [blob],
-          "contribution-qr.png",
-          { type: blob.type },
-        );
+        const file = new File([blob], "contribution-qr.png", {
+          type: blob.type,
+        });
 
         if (isMounted) {
           setQrFile(file);
         }
       } catch {
         if (isMounted) {
-          setQrError(
-            "Unable to load QR code. Please check the public folder.",
-          );
+          setQrError("Unable to load QR code. Please check the public folder.");
         }
       } finally {
         if (isMounted) {
@@ -205,7 +194,7 @@ export default function WhatsAppReminderDialog({
         <div className="flex items-start justify-between border-b border-[#E2E8F0] px-5 py-5 sm:px-6">
           <div>
             <div className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-[#16834A]" />
+              <SiWhatsapp size={17} />
 
               <h2
                 id="whatsapp-reminder-title"
@@ -232,25 +221,18 @@ export default function WhatsAppReminderDialog({
 
         {/* Content */}
         <div className="space-y-5 overflow-y-auto p-5 sm:p-6">
-
           {/* Member Details */}
           <div className="rounded-xl bg-[#F5F7FA] p-4">
-            <p className="text-xs font-medium text-[#64748B]">
-              REMINDER FOR
-            </p>
+            <p className="text-xs font-medium text-[#64748B]">REMINDER FOR</p>
 
             <p className="mt-1 text-sm font-semibold text-[#102744]">
               {member.fullName}
             </p>
 
-            <p className="mt-1 text-xs text-[#64748B]">
-              {member.phoneNumber}
-            </p>
+            <p className="mt-1 text-xs text-[#64748B]">{member.phoneNumber}</p>
 
             <div className="mt-3 border-t border-[#E2E8F0] pt-3">
-              <p className="text-xs text-[#64748B]">
-                Contribution month
-              </p>
+              <p className="text-xs text-[#64748B]">Contribution month</p>
 
               <p className="mt-1 text-sm font-medium text-[#172B4D]">
                 {monthName} {year}
@@ -265,9 +247,7 @@ export default function WhatsAppReminderDialog({
                 Message Preview
               </h3>
 
-              <span className="text-[11px] text-[#64748B]">
-                Hinglish
-              </span>
+              <span className="text-[11px] text-[#64748B]">Hinglish</span>
             </div>
 
             <div className="whitespace-pre-wrap rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-sm leading-6 text-[#334155]">
@@ -318,13 +298,15 @@ export default function WhatsAppReminderDialog({
 
           {shareStatus === "completed" && (
             <p className="text-center text-xs text-[#16834A]">
-              Share action completed. Please confirm the message was sent in WhatsApp.
+              Share action completed. Please confirm the message was sent in
+              WhatsApp.
             </p>
           )}
 
           {shareStatus === "unsupported" && (
             <p className="text-center text-xs text-[#B45309]">
-              Your browser does not support sharing image files. Use the fallback options below.
+              Your browser does not support sharing image files. Use the
+              fallback options below.
             </p>
           )}
 
@@ -358,13 +340,11 @@ export default function WhatsAppReminderDialog({
 
           {/* Instructions */}
           <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-            <p className="text-xs font-semibold text-[#172B4D]">
-              How to send?
-            </p>
+            <p className="text-xs font-semibold text-[#172B4D]">How to send?</p>
 
             <p className="mt-1 text-xs leading-5 text-[#64748B]">
-              Select WhatsApp from the share menu, choose the member's chat,
-              and send the prepared message with the QR code attached.
+              Select WhatsApp from the share menu, choose the member's chat, and
+              send the prepared message with the QR code attached.
             </p>
           </div>
         </div>
