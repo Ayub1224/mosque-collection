@@ -188,7 +188,7 @@ From the downloaded JSON key, use:
 - `client_email` as `GOOGLE_SERVICE_ACCOUNT_EMAIL`.
 - `private_key` as `GOOGLE_PRIVATE_KEY`.
 
-When putting the private key into Netlify or `.env.local`, preserve the full key including the BEGIN/END lines. For an environment variable entered as one line, replace each newline with the two characters `\\n`. The application converts those escaped newlines back into real newlines.
+When putting the private key into Netlify or `.env.local`, preserve the full key including the BEGIN/END lines. For an environment variable entered as one line, replace each newline with the two characters `\n`. The application converts those escaped newlines back into real newlines.
 
 ### Part D: Configure Google OAuth for administrator sign-in
 
@@ -227,7 +227,7 @@ Create `.env.local` for local development and add the same variables in Netlify 
 | `ADMIN_EMAILS` | Yes | Comma-separated list of 1–5 authorised administrator Google email addresses. |
 | `GOOGLE_SHEETS_SPREADSHEET_ID` | Yes | ID of the spreadsheet created for this deployment. |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Yes | Service account email from the downloaded Google Cloud JSON key. |
-| `GOOGLE_PRIVATE_KEY` | Yes | Service account private key from the JSON key. Preserve the full key; use escaped `\\n` line breaks when entering it as a single line. |
+| `GOOGLE_PRIVATE_KEY` | Yes | Service account private key from the JSON key. Preserve the full key; use escaped `\n` line breaks when entering it as a single line. |
 
 Example template (replace every placeholder with your own values):
 
@@ -241,7 +241,7 @@ ADMIN_EMAILS="admin1@example.com,admin2@example.com"
 
 GOOGLE_SHEETS_SPREADSHEET_ID="your-spreadsheet-id"
 GOOGLE_SERVICE_ACCOUNT_EMAIL="your-service-account@your-project.iam.gserviceaccount.com"
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\nYOUR_PRIVATE_KEY_CONTENT\\n-----END PRIVATE KEY-----\\n"
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_CONTENT\n-----END PRIVATE KEY-----\n"
 ```
 
 Generate a strong Auth.js secret locally, for example:
