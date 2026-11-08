@@ -34,6 +34,13 @@ const MONTHS = [
 
 const QR_CODE_PATH = "/contribution-qr.png";
 
+function getWhatsAppChatUrl(phoneNumber: string, message: string) {
+  const digits = phoneNumber.replace(/\D/g, "");
+  const internationalNumber = digits.length === 10 ? `91${digits}` : digits;
+
+  return `https://wa.me/${internationalNumber}?text=${encodeURIComponent(message)}`;
+}
+
 type ShareStatus = "idle" | "sharing" | "completed" | "unsupported" | "error";
 
 export default function WhatsAppReminderDialog({
@@ -59,6 +66,14 @@ export default function WhatsAppReminderDialog({
     year,
     adminName,
   });
+
+  function handleOpenWhatsAppChat() {
+    window.open(
+      getWhatsAppChatUrl(member.phoneNumber, message),
+      "_blank",
+      "noopener,noreferrer",
+    );
+  }
 
   // Load the QR image as a File before the user clicks Share.
   useEffect(() => {
@@ -287,13 +302,23 @@ export default function WhatsAppReminderDialog({
             type="button"
             onClick={handleShare}
             disabled={!qrFile || qrLoading || shareStatus === "sharing"}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#16834A] px-4 text-sm font-medium text-white transition hover:bg-[#116B3C] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#102744] px-4 text-sm font-medium text-white transition hover:bg-[#17365D] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Share2 size={17} />
 
             {shareStatus === "sharing"
               ? "Opening share menu..."
               : "Share Message + QR Code"}
+          </button>
+
+          {/* Open the selected member's WhatsApp chat */}
+          <button
+            type="button"
+            onClick={handleOpenWhatsAppChat}
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#102744] px-4 text-sm font-medium text-white transition hover:bg-[#17365D]"
+          >
+            <SiWhatsapp size={17} />
+            Open Member's WhatsApp Chat
           </button>
 
           {shareStatus === "completed" && (
