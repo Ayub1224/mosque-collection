@@ -73,12 +73,16 @@ export function getCollectionOverview(
 ): CollectionOverviewData {
   const collectionsByMember = new Map<string, Collection[]>();
 
-  // Keep all records within the financial year,
-  // including cancelled records for future history views.
+  // Exclude cancelled allocations from the visible collection history.
+  // The original rows remain in Google Sheets for audit purposes.
   for (const collection of collections) {
     const date = getDonationDate(collection.donationDate);
 
-    if (!date || !isWithinFinancialYear(date, financialYearStart)) {
+    if (
+      collection.recordStatus !== "Active" ||
+      !date ||
+      !isWithinFinancialYear(date, financialYearStart)
+    ) {
       continue;
     }
 
@@ -104,13 +108,8 @@ export function getCollectionOverview(
 
       if (!monthData) continue;
 
-      // Keep active and cancelled records for the breakdown history.
       monthData.donations.push(collection);
-
-      // Only active records contribute to collection totals.
-      if (collection.recordStatus === "Active") {
-        monthData.total += collection.amount;
-      }
+      monthData.total += collection.amount;
     }
 
     // Keep donation records in chronological order.
