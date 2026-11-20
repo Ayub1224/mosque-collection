@@ -228,12 +228,12 @@ export default function DonationDetailsDrawer({
                                 donation.collectionId,
                                 {
                                   onSuccess: (cancelledDonation) => {
+                                    // Remove the cancelled allocation immediately.
                                     setDonations((current) =>
-                                      current.map((item) =>
-                                        item.collectionId ===
-                                        cancelledDonation.collectionId
-                                          ? cancelledDonation
-                                          : item,
+                                      current.filter(
+                                        (item) =>
+                                          item.collectionId !==
+                                          cancelledDonation.collectionId,
                                       ),
                                     );
 
