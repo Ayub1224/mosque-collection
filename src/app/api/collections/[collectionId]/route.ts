@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth, isAdminEmail } from "@/auth";
 import {
-  COLLECTIONS_SHEET_RANGE,
+  MONTHLY_ALLOCATIONS_SHEET_RANGE,
+  PAYMENTS_SHEET_RANGE,
   getGoogleSheetsClient,
   getSpreadsheetId,
 } from "@/lib/google-sheets";
@@ -17,12 +18,19 @@ async function findCollectionRow(collectionId: string) {
   const sheets = getGoogleSheetsClient();
   const spreadsheetId = getSpreadsheetId();
 
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: COLLECTIONS_SHEET_RANGE,
-  });
+  const [allocationsResponse, paymentsResponse] = await Promise.all([
+    sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: MONTHLY_ALLOCATIONS_SHEET_RANGE,
+    }),
+    sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: PAYMENTS_SHEET_RANGE,
+    }),
+  ]);
 
-  const rows = response.data.values ?? [];
+  const rows = allocationsResponse.data.values ?? [];
+  const paymentRows = paymentsResponse.data.values ?? [];
   const rowIndex = rows.findIndex(
     (row, index) => index > 0 && String(row[0] ?? "") === collectionId,
   );
@@ -33,18 +41,28 @@ async function findCollectionRow(collectionId: string) {
 
   const row = rows[rowIndex];
 
+  // MonthlyAllocations columns:
+  // A allocationId, B paymentId, C memberId, D memberName,
+  // E amount, F allocationDate, G recordStatus, H note,
+  // I createdAt, J updatedAt.
+  const paymentId = String(row[1] ?? "");
+  const payment = paymentRows
+    .slice(1)
+    .find((paymentRow) => String(paymentRow[0] ?? "") === paymentId);
+  const paymentType =
+    payment?.[4] === "Yearly" ? "Yearly" : "Monthly";
   const collection: Collection = {
     collectionId: String(row[0] ?? ""),
-    memberId: String(row[1] ?? ""),
-    amount: Number(row[2] ?? 0),
-    donationDate: String(row[3] ?? ""),
-    recordStatus: row[4] === "Cancelled" ? "Cancelled" : "Active",
-    note: String(row[5] ?? ""),
-    createdAt: String(row[6] ?? ""),
-    updatedAt: String(row[7] ?? ""),
-    paymentType: row[8] === "Yearly" ? "Yearly" : "Monthly",
-    paymentGroupId: String(row[9] ?? ""),
-    paymentReceivedDate: String(row[10] ?? String(row[3] ?? "")),
+    memberId: String(row[2] ?? ""),
+    amount: Number(row[4] ?? 0),
+    donationDate: String(row[5] ?? ""),
+    recordStatus: row[6] === "Cancelled" ? "Cancelled" : "Active",
+    note: String(row[7] ?? ""),
+    createdAt: String(row[8] ?? ""),
+    updatedAt: String(row[9] ?? ""),
+    paymentType,
+    paymentGroupId: paymentType === "Yearly" ? paymentId : "",
+    paymentReceivedDate: String(payment?.[5] ?? row[5] ?? ""),
   };
 
   return {
@@ -105,24 +123,17 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
     await result.sheets.spreadsheets.values.update({
       spreadsheetId: result.spreadsheetId,
-      range: `Collections!A${result.rowNumber}:K${result.rowNumber}`,
+      range: `MonthlyAllocations!E${result.rowNumber}:J${result.rowNumber}`,
       valueInputOption: "RAW",
       requestBody: {
-        values: [
-          [
-            updatedCollection.collectionId,
-            updatedCollection.memberId,
-            updatedCollection.amount,
-            updatedCollection.donationDate,
-            updatedCollection.recordStatus,
-            updatedCollection.note,
-            updatedCollection.createdAt,
-            updatedCollection.updatedAt,
-            updatedCollection.paymentType,
-            updatedCollection.paymentGroupId,
-            updatedCollection.paymentReceivedDate,
-          ],
-        ],
+        values: [[
+          updatedCollection.amount,
+          updatedCollection.donationDate,
+          updatedCollection.recordStatus,
+          updatedCollection.note,
+          updatedCollection.createdAt,
+          updatedCollection.updatedAt,
+        ]],
       },
     });
 
@@ -170,33 +181,24 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     }
 
     const now = new Date().toISOString();
-
     const cancelledCollection: Collection = {
       ...result.collection,
       recordStatus: "Cancelled",
       updatedAt: now,
     };
 
+    // Cancel only this allocation. Keep the Payments row for audit history.
     await result.sheets.spreadsheets.values.update({
       spreadsheetId: result.spreadsheetId,
-      range: `Collections!A${result.rowNumber}:K${result.rowNumber}`,
+      range: `MonthlyAllocations!G${result.rowNumber}:J${result.rowNumber}`,
       valueInputOption: "RAW",
       requestBody: {
-        values: [
-          [
-            cancelledCollection.collectionId,
-            cancelledCollection.memberId,
-            cancelledCollection.amount,
-            cancelledCollection.donationDate,
-            cancelledCollection.recordStatus,
-            cancelledCollection.note,
-            cancelledCollection.createdAt,
-            cancelledCollection.updatedAt,
-            cancelledCollection.paymentType,
-            cancelledCollection.paymentGroupId,
-            cancelledCollection.paymentReceivedDate,
-          ],
-        ],
+        values: [[
+          cancelledCollection.recordStatus,
+          cancelledCollection.note,
+          cancelledCollection.createdAt,
+          cancelledCollection.updatedAt,
+        ]],
       },
     });
 
