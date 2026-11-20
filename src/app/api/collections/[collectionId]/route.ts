@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth, isAdminEmail } from "@/auth";
 import {
   MONTHLY_ALLOCATIONS_SHEET_RANGE,
+  PAYMENTS_SHEET_RANGE,
   getGoogleSheetsClient,
   getSpreadsheetId,
 } from "@/lib/google-sheets";
@@ -17,12 +18,19 @@ async function findCollectionRow(collectionId: string) {
   const sheets = getGoogleSheetsClient();
   const spreadsheetId = getSpreadsheetId();
 
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: MONTHLY_ALLOCATIONS_SHEET_RANGE,
-  });
+  const [allocationsResponse, paymentsResponse] = await Promise.all([
+    sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: MONTHLY_ALLOCATIONS_SHEET_RANGE,
+    }),
+    sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: PAYMENTS_SHEET_RANGE,
+    }),
+  ]);
 
-  const rows = response.data.values ?? [];
+  const rows = allocationsResponse.data.values ?? [];
+  const paymentRows = paymentsResponse.data.values ?? [];
   const rowIndex = rows.findIndex(
     (row, index) => index > 0 && String(row[0] ?? "") === collectionId,
   );
@@ -38,6 +46,11 @@ async function findCollectionRow(collectionId: string) {
   // E amount, F allocationDate, G recordStatus, H note,
   // I createdAt, J updatedAt.
   const paymentId = String(row[1] ?? "");
+  const payment = paymentRows
+    .slice(1)
+    .find((paymentRow) => String(paymentRow[0] ?? "") === paymentId);
+  const paymentType =
+    payment?.[4] === "Yearly" ? "Yearly" : "Monthly";
   const collection: Collection = {
     collectionId: String(row[0] ?? ""),
     memberId: String(row[2] ?? ""),
@@ -47,9 +60,9 @@ async function findCollectionRow(collectionId: string) {
     note: String(row[7] ?? ""),
     createdAt: String(row[8] ?? ""),
     updatedAt: String(row[9] ?? ""),
-    paymentType: "Monthly",
-    paymentGroupId: paymentId,
-    paymentReceivedDate: String(row[5] ?? ""),
+    paymentType,
+    paymentGroupId: paymentType === "Yearly" ? paymentId : "",
+    paymentReceivedDate: String(payment?.[5] ?? row[5] ?? ""),
   };
 
   return {
